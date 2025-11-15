@@ -77,11 +77,27 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
         corsConfiguration.setAllowedOriginPatterns(List.of(
+                // Local Development
                 "http://localhost:8083",
+                "http://localhost:3000",      // React
+                "http://localhost:5173",      // Vue
+                "http://localhost:4200",      // Angular
+                "http://127.0.0.1:*",
+
+                // Production - الموقع الفعلي
                 "https://mis.kfs-hiet.edu.eg",
-                "http://127.0.0.1:*"
+                "https://admin.mis.kfs-hiet.edu.eg",
+
+                // Railway URLs
+                "http://smart-attendance-system-production-253e.up.railway.app",
+                "https://smart-attendance-system-production-253e.up.railway.app",
+                "http://smart-attendance-system-production-253e.up.railway.app:*",
+                "https://smart-attendance-system-production-253e.up.railway.app:*"
         ));
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        corsConfiguration.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type", "X-Total-Count"));
         corsConfiguration.setAllowCredentials(false);
