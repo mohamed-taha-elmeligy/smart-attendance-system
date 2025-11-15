@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 /**
@@ -64,5 +61,13 @@ public class AuthController {
                                     "An unexpected error occurred"
                             )));
                 });
+    }
+
+    @GetMapping("/check")
+    public String checkApi (){
+        return """
+                Project: eMTS Smart Attendance System
+                © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
+                """;
     }
     }
