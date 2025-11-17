@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -51,6 +52,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()) )
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         // Public endpoints
                         .pathMatchers("/api/v1/auth/**").permitAll()
 

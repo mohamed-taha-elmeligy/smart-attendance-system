@@ -7,8 +7,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * *******************************************************************
  * File: null.java
@@ -35,7 +33,7 @@ public class Enrollment extends AuditableEntity {
 
     @Setter
     @Column("soft_delete")
-    private AtomicBoolean softDelete = new AtomicBoolean(false);
+    private boolean softDelete = false;
 
     // ===== Relationships =====
     @Setter
@@ -51,24 +49,24 @@ public class Enrollment extends AuditableEntity {
     public Enrollment(@NonNull UUID courseId, @NonNull UUID studentAcademicMember){
         this.courseId = courseId;
         this.studentAcademicMember = studentAcademicMember;
-        this.softDelete = new AtomicBoolean(false);
+        this.softDelete = false;
     }
 
     // ===== Helper Methods for Soft Delete =====
     public String getEnrollmentDeleteStatus() {
-        return softDelete.get() ? "Enrollment Deleted: " + enrollmentId : "Enrollment Undeleted: " + enrollmentId;
+        return softDelete ? "Enrollment Deleted: " + enrollmentId : "Enrollment Undeleted: " + enrollmentId;
     }
 
     public boolean isDeleted() {
-        return softDelete.get();
+        return softDelete;
     }
 
     public Enrollment undelete() {
-        this.softDelete.set(false);
+        this.softDelete = false;
         return this;
     }
 
     public Enrollment delete() {
-        this.softDelete.set(true);
+        this.softDelete = true;
         return this;
     }}

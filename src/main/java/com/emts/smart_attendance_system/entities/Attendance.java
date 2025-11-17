@@ -49,7 +49,6 @@ public class Attendance extends AuditableEntity {
     @Column("device_id")
     private String deviceId ;
 
-    @Setter
     @ToString.Include
     @Column("is_present")
     private boolean isPresent = false;
@@ -95,6 +94,15 @@ public class Attendance extends AuditableEntity {
         this.locationVerified = false;
         this.isPresent = false;
     }
+
+    public boolean isPresent() {
+        return isPresent;
+    }
+
+    public void setPresent(boolean present) {
+        this.isPresent = present;
+    }
+
 
     // ===== Helper Methods for Location Verification =====
     public boolean isValidLocation(){

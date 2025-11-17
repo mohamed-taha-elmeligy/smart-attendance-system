@@ -1,6 +1,5 @@
 package com.emts.smart_attendance_system.exceptions;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

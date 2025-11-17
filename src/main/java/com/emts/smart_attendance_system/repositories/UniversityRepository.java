@@ -1,6 +1,5 @@
 package com.emts.smart_attendance_system.repositories;
 
-import com.emts.smart_attendance_system.entities.Role;
 import com.emts.smart_attendance_system.entities.University;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;

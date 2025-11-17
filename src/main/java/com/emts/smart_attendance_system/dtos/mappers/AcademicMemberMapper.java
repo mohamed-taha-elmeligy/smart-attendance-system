@@ -30,9 +30,6 @@ public interface AcademicMemberMapper {
 
     // ===== Synchronous Mappings (for internal use) =====
 
-    /**
-     * Convert RequestAcademicMember DTO to AcademicMember entity
-     */
     @Mapping(target = "academicMemberId", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "emailVerified", ignore = true)
@@ -41,15 +38,9 @@ public interface AcademicMemberMapper {
     @Mapping(target = "updatedAt", ignore = true)
     AcademicMember toEntity(RequestAcademicMember request);
 
-    /**
-     * Convert AcademicMember entity to ResponseAcademicMember DTO
-     */
     @Mapping(target = "emailVerificationStatus", expression = "java(entity.getEmailVerifiedText())")
     ResponseAcademicMember toResponse(AcademicMember entity);
 
-    /**
-     * Update existing entity from request DTO (full update)
-     */
     @Mapping(target = "academicMemberId", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "emailVerified", ignore = true)
@@ -58,9 +49,6 @@ public interface AcademicMemberMapper {
     @Mapping(target = "updatedAt", ignore = true)
     void updateEntityFromRequest(RequestAcademicMember request, @MappingTarget AcademicMember entity);
 
-    /**
-     * Partial update of entity from request DTO (only non-null values)
-     */
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "academicMemberId", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
@@ -72,50 +60,26 @@ public interface AcademicMemberMapper {
 
     // ===== Reactive Helper Methods (Mono/Flux wrappers) =====
 
-    /**
-     * Convert Mono<RequestAcademicMember> to Mono<AcademicMember>
-     * Usage: mapper.toEntityMono(requestMono)
-     */
     default Mono<AcademicMember> toEntityMono(Mono<RequestAcademicMember> request) {
         return request.map(this::toEntity);
     }
 
-    /**
-     * Convert RequestAcademicMember to Mono<AcademicMember>
-     * Usage: mapper.toEntityMono(request)
-     */
     default Mono<AcademicMember> toEntityMono(RequestAcademicMember request) {
         return Mono.just(toEntity(request));
     }
 
-    /**
-     * Convert Mono<AcademicMember> to Mono<ResponseAcademicMember>
-     * Usage: mapper.toResponseMono(entityMono)
-     */
     default Mono<ResponseAcademicMember> toResponseMono(Mono<AcademicMember> entity) {
         return entity.map(this::toResponse);
     }
 
-    /**
-     * Convert AcademicMember to Mono<ResponseAcademicMember>
-     * Usage: mapper.toResponseMono(entity)
-     */
     default Mono<ResponseAcademicMember> toResponseMono(AcademicMember entity) {
         return Mono.just(toResponse(entity));
     }
 
-    /**
-     * Convert Flux<AcademicMember> to Flux<ResponseAcademicMember>
-     * Usage: repository.findAll().transform(mapper::toResponseFlux)
-     */
     default Flux<ResponseAcademicMember> toResponseFlux(Flux<AcademicMember> entities) {
         return entities.map(this::toResponse);
     }
 
-    /**
-     * Update entity from Mono<RequestAcademicMember> and return updated Mono<AcademicMember>
-     * Usage: mapper.updateEntityFromRequestMono(requestMono, entity)
-     */
     default Mono<AcademicMember> updateEntityFromRequestMono(
             Mono<RequestAcademicMember> request,
             AcademicMember entity) {
@@ -125,10 +89,6 @@ public interface AcademicMemberMapper {
         });
     }
 
-    /**
-     * Partial update entity from Mono<RequestAcademicMember> and return updated Mono<AcademicMember>
-     * Usage: mapper.partialUpdateMono(requestMono, entity)
-     */
     default Mono<AcademicMember> partialUpdateMono(
             Mono<RequestAcademicMember> request,
             AcademicMember entity) {
@@ -138,10 +98,6 @@ public interface AcademicMemberMapper {
         });
     }
 
-    /**
-     * Update entity reactively with flatMap support
-     * Usage: repository.findById(id).flatMap(entity -> mapper.updateAndReturn(request, entity))
-     */
     default Mono<AcademicMember> updateAndReturn(
             RequestAcademicMember request,
             Mono<AcademicMember> entityMono) {
@@ -151,10 +107,6 @@ public interface AcademicMemberMapper {
         });
     }
 
-    /**
-     * Partial update entity reactively with flatMap support
-     * Usage: repository.findById(id).flatMap(entity -> mapper.partialUpdateAndReturn(request, entity))
-     */
     default Mono<AcademicMember> partialUpdateAndReturn(
             RequestAcademicMember request,
             Mono<AcademicMember> entityMono) {
