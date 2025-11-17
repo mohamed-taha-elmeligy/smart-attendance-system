@@ -20,6 +20,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "university")
 @Getter
 @EqualsAndHashCode(callSuper = false , of = "universitiesId")
@@ -35,12 +36,10 @@ public class University extends AuditableEntity {
 
     @Column("name")
     @ToString.Include
-    @Setter
     private String name;
 
     @Column("location")
     @ToString.Include
-    @Setter
     private String location;
 
     // ===== Builder =====

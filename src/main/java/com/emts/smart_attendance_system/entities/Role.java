@@ -19,6 +19,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "roles")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
@@ -33,16 +34,13 @@ public class Role extends AuditableEntity {
     @Column(value = "role_id")
     private UUID roleId;
 
-    @Setter
     @ToString.Include
     @Column(value = "name")
     private String name;
 
-    @Setter
     @Column(value = "description")
     private String description;
 
-    @Setter
     @ToString.Include
     @Column(value = "soft_delete")
     private boolean softDelete = false;

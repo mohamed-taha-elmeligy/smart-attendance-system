@@ -20,6 +20,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "academic_year")
 @NoArgsConstructor
 @Getter
@@ -33,16 +34,13 @@ public class AcademicYear extends AuditableEntity {
     @Column("academic_year_id")
     private UUID academicYearId ;
 
-    @Setter
     @ToString.Include
     @Column("code")
     private String code ;
 
-    @Setter
     @Column("description")
     private String description ;
 
-    @Setter
     @ToString.Include
     @Column(value = "soft_delete")
     private boolean softDelete = false;
