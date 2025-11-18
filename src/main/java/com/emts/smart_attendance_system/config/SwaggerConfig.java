@@ -7,13 +7,16 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * *******************************************************************
  * File: SwaggerConfig.java
- * Package: com.emts.smart_attendance_system.utils
+ * Package: com.emts.smart_attendance_system.config
  * Project: eMTS Smart Attendance System
  * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
  * This file is part of the eMTS Smart Attendance System.
@@ -29,8 +32,13 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+        Server server = new Server();
+        server.setUrl("https://smart-attendance-system-production-253e.up.railway.app");
+        server.setDescription("Production server on Railway");
+
         return new OpenAPI()
                 .info(apiInfo())
+                .servers(List.of(server))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME, createSecurityScheme())
