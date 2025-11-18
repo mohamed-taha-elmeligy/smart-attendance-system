@@ -1,5 +1,6 @@
 package com.emts.smart_attendance_system;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -18,9 +19,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
+@Slf4j
 public class SmartAttendanceSystemApplication {
 
 	public static void main(String[] args) {
+		String port = System.getenv("PORT");
+		log.info("PORT from env: {}" ,port);
 		SpringApplication.run(SmartAttendanceSystemApplication.class, args);
 	}
 
