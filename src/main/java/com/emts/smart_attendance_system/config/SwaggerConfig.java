@@ -32,13 +32,18 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        Server server = new Server();
-        server.setUrl("https://smart-attendance-system-production-253e.up.railway.app");
-        server.setDescription("Production server on Railway");
+
+        Server localServer = new Server();
+        localServer.setUrl("http://localhost:8083"); // أثناء التطوير
+        localServer.setDescription("Local development server");
+
+        Server productionServer = new Server();
+        productionServer.setUrl("https://smart-attendance-system-production-253e.up.railway.app");
+        productionServer.setDescription("Production server on Railway");
 
         return new OpenAPI()
                 .info(apiInfo())
-                .servers(List.of(server))
+                .servers(List.of(localServer, productionServer))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME, createSecurityScheme())
@@ -52,12 +57,12 @@ public class SwaggerConfig {
                 .version("1.0.0")
                 .contact(new Contact()
                         .name("Mohamed Taha Elmeligy")
-                        .email("support@emts.com")
-                        .url("https://emts.com")
+                        .email("mt.elmeligy.community@gmail.com")
+                        .url("https://www.linkedin.com/in/mtelmeligy-backend-dev/")
                 )
                 .license(new License()
                         .name("© 2025 eMTS (e Modern Tech Solutions)")
-                        .url("https://emts.com/license")
+                        .url("mt.elmeligy.community@gmail.com")
                 );
     }
 

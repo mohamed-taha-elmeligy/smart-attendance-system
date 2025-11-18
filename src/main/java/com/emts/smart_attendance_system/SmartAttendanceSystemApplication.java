@@ -23,8 +23,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SmartAttendanceSystemApplication {
 
 	public static void main(String[] args) {
-		String port = System.getenv("PORT");
-		log.info("PORT from env: {}" ,port);
 		SpringApplication.run(SmartAttendanceSystemApplication.class, args);
 	}
 
