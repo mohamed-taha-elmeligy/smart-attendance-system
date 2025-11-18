@@ -34,7 +34,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
 
         Server localServer = new Server();
-        localServer.setUrl("http://localhost:8083"); // أثناء التطوير
+        localServer.setUrl("http://localhost:8083");
         localServer.setDescription("Local development server");
 
         Server productionServer = new Server();
