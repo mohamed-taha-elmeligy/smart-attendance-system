@@ -78,8 +78,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        //corsConfiguration.setAllowCredentials(true);
-
         corsConfiguration.setAllowedOriginPatterns(List.of(
                 // Local Development
                 "http://localhost:8080",
