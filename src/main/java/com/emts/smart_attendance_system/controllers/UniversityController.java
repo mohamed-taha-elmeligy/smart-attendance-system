@@ -3,6 +3,7 @@ package com.emts.smart_attendance_system.controllers;
 import com.emts.smart_attendance_system.converters.UniversityConverter;
 import com.emts.smart_attendance_system.dtos.requests.RequestUniversity;
 import com.emts.smart_attendance_system.dtos.responses.ResponseUniversity;
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -34,6 +36,8 @@ import java.util.UUID;
 @Slf4j
 public class UniversityController {
     private UniversityConverter universityConverter;
+    private static final String SUCCESS = "success";
+    private static final String MESSAGE = "message";
 
     @PostMapping("/add")
     public Mono<ResponseEntity<ResponseUniversity>> add(
@@ -41,18 +45,16 @@ public class UniversityController {
         log.debug("Adding new university: {}", university.getName());
         return universityConverter.addOne(university)
                 .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(null)))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)))
                 .onErrorResume(e -> {
                     log.error("Error adding university: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(null));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
                 });
     }
 
-    @GetMapping("/{universityId}")
+    @GetMapping("/search-id")
     public Mono<ResponseEntity<ResponseUniversity>> findById(
-            @PathVariable @NonNull UUID universityId) {
+            @RequestParam @NonNull UUID universityId) {
         log.debug("Fetching university by ID: {}", universityId);
         return universityConverter.findById(universityId)
                 .map(ResponseEntity::ok)
@@ -85,8 +87,7 @@ public class UniversityController {
                 .defaultIfEmpty(ResponseEntity.ok(false))
                 .onErrorResume(e -> {
                     log.error("Error checking name existence: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(false));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false));
                 });
     }
 
@@ -118,24 +119,38 @@ public class UniversityController {
         log.debug("Updating university: {}", universityId);
         return universityConverter.update(universityId, university)
                 .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(null)))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)))
                 .onErrorResume(e -> {
                     log.error("Error updating university: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(null));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
                 });
     }
 
     @DeleteMapping("/delete")
-    public Mono<ResponseEntity<Void>> delete(
+    public Mono<ResponseEntity<Map<String, String>>> delete(
             @RequestParam @NonNull UUID universityId) {
         log.debug("Deleting university: {}", universityId);
         return universityConverter.delete(universityId)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()))
-                .onErrorResume(e -> {
-                    log.error("Error deleting university: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .then(Mono.fromSupplier(() -> {
+                    log.info("Successfully deleted university: {}", universityId);
+                    return ResponseEntity.ok(Map.of(
+                            SUCCESS, "true",
+                            MESSAGE, "University deleted successfully"
+                    ));
+                }))
+                .onErrorResume(CurrentDeleteException.class, ex -> {
+                    log.warn("Failed to delete university {}: {}", universityId, ex.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, ex.getMessage()
+                    )));
+                })
+                .onErrorResume(Exception.class, ex -> {
+                    log.error("Unexpected error deleting university {}: {}", universityId, ex.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, "Internal server error"
+                    )));
                 });
     }
 }

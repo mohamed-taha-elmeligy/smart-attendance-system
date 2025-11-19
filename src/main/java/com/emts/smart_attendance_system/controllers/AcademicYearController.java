@@ -2,8 +2,8 @@ package com.emts.smart_attendance_system.controllers;
 
 import com.emts.smart_attendance_system.converters.AcademicYearConverter;
 import com.emts.smart_attendance_system.dtos.requests.RequestAcademicYear;
-import com.emts.smart_attendance_system.dtos.responses.BatchResponse;
 import com.emts.smart_attendance_system.dtos.responses.ResponseAcademicYear;
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -15,8 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import java.time.Duration;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -37,7 +36,9 @@ import java.util.UUID;
 @Slf4j
 public class AcademicYearController {
     private AcademicYearConverter academicYearConverter;
-    private static final int MAX_BATCH_SIZE = 10000;
+    private static final String SUCCESS ="success";
+    private static final String MESSAGE ="message";
+
 
     @PostMapping("/add")
     public Mono<ResponseEntity<ResponseAcademicYear>> add(
@@ -52,49 +53,6 @@ public class AcademicYearController {
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body(null));
                 });
-    }
-
-    @PostMapping("/batch")
-    public Mono<ResponseEntity<BatchResponse>> addAll(
-            @RequestBody @Valid List<RequestAcademicYear> requestAcademicYears) {
-        log.info("Received batch request with {} academic years", requestAcademicYears.size());
-
-        if (requestAcademicYears.isEmpty()) {
-            log.warn("Batch request received with empty list");
-            return Mono.just(ResponseEntity.badRequest()
-                    .body(new BatchResponse(0, 0, "Batch cannot be empty")));
-        }
-
-        if (requestAcademicYears.size() > MAX_BATCH_SIZE) {
-            log.warn("Batch size exceeds maximum limit: {} > {}", requestAcademicYears.size(), MAX_BATCH_SIZE);
-            return Mono.just(ResponseEntity.badRequest()
-                    .body(new BatchResponse(0, requestAcademicYears.size(),
-                            "Batch size exceeds maximum limit of " + MAX_BATCH_SIZE)));
-        }
-
-        int totalCount = requestAcademicYears.size();
-
-        return academicYearConverter.addAll(Flux.fromIterable(requestAcademicYears))
-                .map(success -> {
-                    if (Boolean.TRUE.equals(success)) {
-                        log.info("Batch processing completed successfully. Total: {}", totalCount);
-                        return ResponseEntity.ok(
-                                new BatchResponse(totalCount, 0, totalCount,
-                                        "All academic years saved successfully"));
-                    } else {
-                        log.warn("Batch processing completed with failures. Total: {}", totalCount);
-                        return ResponseEntity.ok(
-                                new BatchResponse(0, totalCount, totalCount,
-                                        "Failed to save academic years"));
-                    }
-                })
-                .onErrorResume(e -> {
-                    log.error("Critical error in batch processing: {}", e.getMessage(), e);
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(new BatchResponse(0, totalCount, totalCount,
-                                    "Internal error: " + e.getMessage())));
-                })
-                .timeout(Duration.ofMinutes(5));
     }
 
     @GetMapping("/{academicYearId}")
@@ -197,14 +155,31 @@ public class AcademicYearController {
     }
 
     @DeleteMapping("/delete")
-    public Mono<ResponseEntity<Void>> softDelete(
+    public Mono<ResponseEntity<Map<String, String>>> softDelete(
             @RequestParam @NonNull UUID academicYearId) {
         log.debug("Soft deleting academic year: {}", academicYearId);
         return academicYearConverter.softDelete(academicYearId)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()))
-                .onErrorResume(e -> {
-                    log.error("Error soft deleting academic year: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .then(Mono.fromSupplier(() -> {
+                    log.info("Successfully soft deleted academic year: {}", academicYearId);
+                    return ResponseEntity.ok(Map.of(
+                            SUCCESS, "true",
+                            MESSAGE, "Academic year deleted successfully"
+                    ));
+                }))
+                .onErrorResume(CurrentDeleteException.class, ex -> {
+                    log.warn("Failed to soft delete academic year {}: {}", academicYearId, ex.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, ex.getMessage()
+                    )));
+                })
+                .onErrorResume(Exception.class, ex -> {
+                    log.error("Unexpected error deleting academic year {}: {}", academicYearId, ex.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, "Internal server error"
+                    )));
                 });
     }
+
 }

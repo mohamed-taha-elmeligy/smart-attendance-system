@@ -2,8 +2,8 @@ package com.emts.smart_attendance_system.controllers;
 
 import com.emts.smart_attendance_system.converters.RoleConverter;
 import com.emts.smart_attendance_system.dtos.requests.RequestRole;
-import com.emts.smart_attendance_system.dtos.responses.BatchResponse;
 import com.emts.smart_attendance_system.dtos.responses.ResponseRole;
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -15,8 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.NonNull;
 
-import java.time.Duration;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -37,7 +36,8 @@ import java.util.UUID;
 @Slf4j
 public class RoleController {
     private RoleConverter roleConverter;
-    private static final int MAX_BATCH_SIZE = 10000;
+    private static final String SUCCESS = "success";
+    private static final String MESSAGE = "message";
 
     @PostMapping("/add")
     public Mono<ResponseEntity<ResponseRole>> add(
@@ -45,56 +45,11 @@ public class RoleController {
         log.debug("Adding new role: {}", role.getName());
         return roleConverter.addOne(role)
                 .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(null)))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)))
                 .onErrorResume(e -> {
                     log.error("Error adding role: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(null));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
                 });
-    }
-
-    @PostMapping("/batch")
-    public Mono<ResponseEntity<BatchResponse>> addAll(
-            @RequestBody @Valid List<RequestRole> requestRoles) {
-        log.info("Received batch request with {} roles", requestRoles.size());
-
-        if (requestRoles.isEmpty()) {
-            log.warn("Batch request received with empty list");
-            return Mono.just(ResponseEntity.badRequest()
-                    .body(new BatchResponse(0, 0, "Batch cannot be empty")));
-        }
-
-        if (requestRoles.size() > MAX_BATCH_SIZE) {
-            log.warn("Batch size exceeds maximum limit: {} > {}", requestRoles.size(), MAX_BATCH_SIZE);
-            return Mono.just(ResponseEntity.badRequest()
-                    .body(new BatchResponse(0, requestRoles.size(),
-                            "Batch size exceeds maximum limit of " + MAX_BATCH_SIZE)));
-        }
-
-        int totalCount = requestRoles.size();
-
-        return roleConverter.addAll(Flux.fromIterable(requestRoles))
-                .map(success -> {
-                    if (Boolean.TRUE.equals(success)) {
-                        log.info("Batch processing completed successfully. Total: {}", totalCount);
-                        return ResponseEntity.ok(
-                                new BatchResponse(totalCount, 0, totalCount,
-                                        "All roles saved successfully"));
-                    } else {
-                        log.warn("Batch processing completed with failures. Total: {}", totalCount);
-                        return ResponseEntity.ok(
-                                new BatchResponse(0, totalCount, totalCount,
-                                        "Failed to save roles"));
-                    }
-                })
-                .onErrorResume(e -> {
-                    log.error("Critical error in batch processing: {}", e.getMessage(), e);
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(new BatchResponse(0, totalCount, totalCount,
-                                    "Internal error: " + e.getMessage())));
-                })
-                .timeout(Duration.ofMinutes(5));
     }
 
     @GetMapping("/{roleId}")
@@ -132,8 +87,7 @@ public class RoleController {
                 .defaultIfEmpty(ResponseEntity.ok(false))
                 .onErrorResume(e -> {
                     log.error("Error checking name existence: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(false));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false));
                 });
     }
 
@@ -175,24 +129,38 @@ public class RoleController {
         log.debug("Updating role: {}", roleId);
         return roleConverter.update(roleId, role)
                 .map(ResponseEntity::ok)
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(null)))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)))
                 .onErrorResume(e -> {
                     log.error("Error updating role: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(null));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
                 });
     }
 
     @DeleteMapping("/delete")
-    public Mono<ResponseEntity<Void>> softDelete(
+    public Mono<ResponseEntity<Map<String, String>>> softDelete(
             @RequestParam @NonNull UUID roleId) {
         log.debug("Soft deleting role: {}", roleId);
         return roleConverter.softDelete(roleId)
-                .then(Mono.just(ResponseEntity.ok().<Void>build()))
-                .onErrorResume(e -> {
-                    log.error("Error soft deleting role: {}", e.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .then(Mono.fromSupplier(() -> {
+                    log.info("Successfully soft deleted role: {}", roleId);
+                    return ResponseEntity.ok(Map.of(
+                            SUCCESS, "true",
+                            MESSAGE, "Role deleted successfully"
+                    ));
+                }))
+                .onErrorResume(CurrentDeleteException.class, ex -> {
+                    log.warn("Failed to soft delete role {}: {}", roleId, ex.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, ex.getMessage()
+                    )));
+                })
+                .onErrorResume(Exception.class, ex -> {
+                    log.error("Unexpected error deleting role {}: {}", roleId, ex.getMessage());
+                    return Mono.just(ResponseEntity.status(500).body(Map.of(
+                            SUCCESS, "false",
+                            MESSAGE, "Internal server error"
+                    )));
                 });
     }
 }

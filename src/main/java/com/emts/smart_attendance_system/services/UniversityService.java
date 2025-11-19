@@ -2,6 +2,8 @@ package com.emts.smart_attendance_system.services;
 
 import com.emts.smart_attendance_system.config.RetryConfig;
 import com.emts.smart_attendance_system.entities.University;
+import com.emts.smart_attendance_system.enums.UniversitiesData;
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import com.emts.smart_attendance_system.repositories.UniversityRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,48 +47,49 @@ public class UniversityService {
 
     public Mono<University> findById(UUID universityId) {
         return universityRepository.findByUniversitiesId(universityId)
-                .retryWhen(retryConfig.createRetrySpec("Find University By ID"))
-                .doOnError(error -> log.error("Error finding University by ID: {}", error.getMessage()));
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.debug("University not found with ID: {}", universityId)
+                ));
     }
 
     public Mono<University> findByName(String name) {
         return universityRepository.findByName(name)
-                .retryWhen(retryConfig.createRetrySpec("Find University By Name"))
-                .doOnError(error -> log.error("Error finding University by name: {}", error.getMessage()));
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.debug("University not found with name: {}", name)
+                ));
     }
 
     public Mono<Boolean> existsByName(String name) {
-        return universityRepository.existsByName(name)
-                .retryWhen(retryConfig.createRetrySpec("Check University Existence"))
-                .doOnError(error -> log.error("Error checking University existence: {}", error.getMessage()));
+        return universityRepository.existsByName(name);
     }
 
     public Flux<University> findAll() {
-        return universityRepository.findAll()
-                .retryWhen(retryConfig.createRetrySpec("Find All Universities"))
-                .doOnError(error -> log.error("Error finding all Universities: {}", error.getMessage()));
+        return universityRepository.findAll();
     }
 
     public Flux<University> searchByName(String partialName) {
-        return universityRepository.findAllByNameContainingIgnoreCase(partialName)
-                .retryWhen(retryConfig.createRetrySpec("Search University By Name"))
-                .doOnError(error -> log.error("Error searching Universities by name: {}", error.getMessage()));
+        return universityRepository.findAllByNameContainingIgnoreCase(partialName);
     }
 
     public Mono<University> update(University university) {
+        log.info("Attempting to update University ID: {}", university.getUniversitiesId());
         return universityRepository.save(university)
                 .retryWhen(retryConfig.createRetrySpec("Update University"))
-                .doOnSuccess(updated -> log.info("Updated University ID: {}", updated.getUniversitiesId()))
-                .doOnError(error -> log.error("Failed to update University: {}", error.getMessage()));
+                .doOnSuccess(updated -> log.info("Updated University ID: {}", updated.getUniversitiesId()));
     }
 
     public Mono<Void> delete(UUID universityId) {
-        log.info("Deleting University ID: {}", universityId);
+        log.info("Attempting to delete University ID: {}", universityId);
         return universityRepository.findByUniversitiesId(universityId)
-                .flatMap(universityRepository::delete)
+                .flatMap(university -> {
+                    if (UniversitiesData.DEVELOPERS_UNIVERSITY.name().equals(university.getName())) {
+                        log.warn("Attempted to delete system university: {}", university.getName());
+                        return Mono.error(new CurrentDeleteException("The system role cannot be deleted:"+ university.getName()));
+                    }
+                    return universityRepository.delete(university);
+                })
                 .retryWhen(retryConfig.createRetrySpec("Delete University"))
-                .doOnSuccess(v -> log.info("Successfully deleted University ID: {}", universityId))
-                .doOnError(error -> log.error("Failed to delete University: {}", error.getMessage()));
+                .then()
+                .doOnSuccess(v -> log.info("Successfully deleted University ID: {}", universityId));
     }
 }
-

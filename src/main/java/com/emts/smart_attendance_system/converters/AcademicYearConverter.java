@@ -38,12 +38,6 @@ public class AcademicYearConverter {
         );
     }
 
-    public Mono<Boolean> addAll(Flux<RequestAcademicYear> requestFlux) {
-        return academicYearService.addAll(
-                requestFlux.map(academicYearMapper::toEntity)
-        );
-    }
-
     public Mono<ResponseAcademicYear> findById(UUID academicYearId) {
         return academicYearMapper.toResponseMono(
                 academicYearService.findById(academicYearId)

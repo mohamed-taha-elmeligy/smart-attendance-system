@@ -91,7 +91,7 @@ public class AcademicMemberConverter {
                 .map(academicMemberMapper::toResponse);
     }
 
-    public Mono<Boolean> softDelete(UUID academicMemberId) {
+    public Mono<Void> softDelete(UUID academicMemberId) {
         return academicMemberService.softDelete(academicMemberId);
     }
 }

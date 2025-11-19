@@ -1,5 +1,6 @@
 package com.emts.smart_attendance_system.exceptions;
 
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 /**
  * *******************************************************************
@@ -26,6 +29,22 @@ import reactor.core.publisher.Mono;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    // Response
+    @ExceptionHandler(CurrentDeleteException.class)
+    public Mono<ResponseEntity<Map<String,String>>> handelCurrentDeleteException (CurrentDeleteException ex){
+        Map<String, String> response = Map.of(
+                "status", "error",
+                "message", ex.getMessage()
+        );
+        return Mono.just(ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(response));
+    }
+
+
+
+
 
     // Resource Not Found (404)
     @ExceptionHandler(ChangeSetPersister.NotFoundException.class)

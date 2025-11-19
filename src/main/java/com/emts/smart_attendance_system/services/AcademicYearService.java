@@ -2,6 +2,7 @@ package com.emts.smart_attendance_system.services;
 
 import com.emts.smart_attendance_system.config.RetryConfig;
 import com.emts.smart_attendance_system.entities.AcademicYear;
+import com.emts.smart_attendance_system.exceptions.exception.CurrentDeleteException;
 import com.emts.smart_attendance_system.repositories.AcademicYearRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.UUID;
 
 /**
@@ -43,79 +46,72 @@ public class AcademicYearService {
                 });
     }
 
-    public Mono<Boolean> addAll(Flux<AcademicYear> academicYearFlux) {
-        log.info("Starting batch save for AcademicYears...");
-        return academicYearRepository
-                .saveAll(academicYearFlux)
-                .then(Mono.fromCallable(() -> {
-                    log.info("All AcademicYears saved successfully.");
-                    return true;
-                }))
-                .onErrorResume(error -> {
-                    log.error("Error while saving AcademicYears: {}", error.getMessage());
-                    return Mono.just(false);
-                });
-    }
-
     public Mono<AcademicYear> findById(UUID academicYearId) {
         return academicYearRepository.findByAcademicYearIdAndSoftDeleteFalse(academicYearId)
-                .retryWhen(retryConfig.createRetrySpec("Find AcademicYear By ID"))
-                .doOnError(error -> log.error("Error finding AcademicYear by ID: {}", error.getMessage()));
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.debug("AcademicYear not found with ID: {}", academicYearId)
+                ));
     }
 
     public Mono<AcademicYear> findByCode(String code) {
         return academicYearRepository.findByCodeAndSoftDeleteFalse(code)
-                .retryWhen(retryConfig.createRetrySpec("Find AcademicYear By Code"))
-                .doOnError(error -> log.error("Error finding AcademicYear by code: {}", error.getMessage()));
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.debug("AcademicYear not found with code: {}", code)
+                ));
     }
 
     public Mono<Boolean> existsByCode(String code) {
-        return academicYearRepository.existsByCodeAndSoftDeleteFalse(code)
-                .retryWhen(retryConfig.createRetrySpec("Check AcademicYear Existence"))
-                .doOnError(error -> log.error("Error checking AcademicYear existence: {}", error.getMessage()));
+        return academicYearRepository.existsByCodeAndSoftDeleteFalse(code);
     }
 
     public Mono<AcademicYear> getLatestAcademicYear() {
         return academicYearRepository.findTopBySoftDeleteFalseOrderByCreatedAtDesc()
-                .retryWhen(retryConfig.createRetrySpec("Fetch latest AcademicYear"))
-                .doOnError(error -> log.error("Error fetching latest AcademicYear: {}", error.getMessage()));
+                .switchIfEmpty(Mono.fromRunnable(() ->
+                        log.debug("No academic year found")
+                ));
     }
 
-
     public Flux<AcademicYear> findAll() {
-        return academicYearRepository.findAllBySoftDeleteFalse()
-                .retryWhen(retryConfig.createRetrySpec("Find All AcademicYears"))
-                .doOnError(error -> log.error("Error finding all AcademicYears: {}", error.getMessage()));
+        return academicYearRepository.findAllBySoftDeleteFalse();
     }
 
     public Flux<AcademicYear> findAllDeleted() {
-        return academicYearRepository.findAllBySoftDeleteTrue()
-                .retryWhen(retryConfig.createRetrySpec("Find All Deleted AcademicYears"))
-                .doOnError(error -> log.error("Error finding deleted AcademicYears: {}", error.getMessage()));
+        return academicYearRepository.findAllBySoftDeleteTrue();
     }
 
     public Flux<AcademicYear> searchByCode(String partialCode) {
-        return academicYearRepository.findAllByCodeContainingIgnoreCaseAndSoftDeleteFalse(partialCode)
-                .retryWhen(retryConfig.createRetrySpec("Search AcademicYear By Code"))
-                .doOnError(error -> log.error("Error searching AcademicYears by code: {}", error.getMessage()));
+        return academicYearRepository.findAllByCodeContainingIgnoreCaseAndSoftDeleteFalse(partialCode);
     }
 
     public Mono<AcademicYear> update(AcademicYear academicYear) {
+        log.info("Attempting to update AcademicYear ID: {}", academicYear.getAcademicYearId());
         return academicYearRepository.save(academicYear)
                 .retryWhen(retryConfig.createRetrySpec("Update AcademicYear"))
-                .doOnSuccess(updated -> log.info("Updated AcademicYear ID: {}", updated.getAcademicYearId()))
-                .doOnError(error -> log.error("Failed to update AcademicYear: {}", error.getMessage()));
+                .doOnSuccess(updated -> log.info("Updated AcademicYear ID: {}", updated.getAcademicYearId()));
     }
 
     public Mono<Void> softDelete(UUID academicYearId) {
+        log.info("Attempting to soft delete AcademicYear ID: {}", academicYearId);
         return academicYearRepository.findByAcademicYearIdAndSoftDeleteFalse(academicYearId)
                 .flatMap(academicYear -> {
+                    if (isCurrentYear(academicYear.getCode())) {
+                        log.warn("Attempted to delete current year: {}", academicYear.getCode());
+                        return Mono.error(new CurrentDeleteException(
+                                "The current year cannot be deleted: " + academicYear.getCode()
+                        ));
+                    }
                     academicYear.setSoftDelete(true);
                     return academicYearRepository.save(academicYear);
                 })
                 .retryWhen(retryConfig.createRetrySpec("Soft Delete AcademicYear"))
                 .then()
-                .doOnSuccess(v -> log.info("Soft deleted AcademicYear ID: {}", academicYearId))
-                .doOnError(error -> log.error("Failed to soft delete AcademicYear: {}", error.getMessage()));
+                .doOnSuccess(v -> log.info("Successfully soft deleted AcademicYear ID: {}", academicYearId));
+    }
+
+    private boolean isCurrentYear(String yearCode) {
+        Year nowYear = Year.now();
+        int academicYearStart = (LocalDate.now().getMonthValue() < 9) ?
+                nowYear.getValue() - 1 : nowYear.getValue();
+        return yearCode.equals("AY" + academicYearStart);
     }
 }

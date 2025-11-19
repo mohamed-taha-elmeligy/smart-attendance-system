@@ -38,12 +38,6 @@ public class RoleConverter {
         );
     }
 
-    public Mono<Boolean> addAll(Flux<RequestRole> requestFlux) {
-        return roleService.addAll(
-                requestFlux.map(roleMapper::toEntity)
-        );
-    }
-
     public Mono<ResponseRole> findById(UUID roleId) {
         return roleMapper.toResponseMono(
                 roleService.findById(roleId)
