@@ -2,7 +2,7 @@ package com.emts.smart_attendance_system.enums;
 
 /**
  ********************************************************************
- * File: null.java
+ * File: TypeNotification.java
  * Package: com.emts.smart_attendance_system.enums
  * Project: eMTS Smart Attendance System
  * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)

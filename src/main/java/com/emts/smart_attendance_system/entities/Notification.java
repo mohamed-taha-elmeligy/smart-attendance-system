@@ -86,7 +86,4 @@ public class Notification extends AuditableEntity {
         this.isRead = true;
         return this;
     }
-
-
-
 }

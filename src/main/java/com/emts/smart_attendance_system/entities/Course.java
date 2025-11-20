@@ -19,6 +19,7 @@ import java.util.UUID;
  * Port Number: 8083
  * *******************************************************************
  */
+@Setter
 @Table(name = "course")
 @NoArgsConstructor
 @Getter
@@ -32,32 +33,26 @@ public class Course extends AuditableEntity {
     @Column("course_id")
     private UUID courseId ;
 
-    @Setter
     @ToString.Include
     @Column("code")
     private String code ;
 
-    @Setter
     @ToString.Include
     @Column("name")
     private String name ;
 
-    @Setter
     @Column("description")
     private String description ;
 
-    @Setter
     @ToString.Include
     @Column("soft_delete")
     private boolean softDelete = false;
 
     // ===== Relationships =====
-    @Setter
     @ToString.Include
     @Column("university_id")
     private UUID universityId ;
 
-    @Setter
     @ToString.Include
     @Column("academic_year_id")
     private UUID academicYearId ;
