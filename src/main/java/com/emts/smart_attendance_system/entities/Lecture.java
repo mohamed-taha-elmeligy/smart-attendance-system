@@ -13,7 +13,7 @@ import java.util.UUID;
 
 /**
  * *******************************************************************
- * File: null.java
+ * File: Lecture.java
  * Package: com.emts.smart_attendance_system.entities
  * Project: eMTS Smart Attendance System
  * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
