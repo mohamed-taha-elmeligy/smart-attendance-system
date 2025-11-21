@@ -20,10 +20,15 @@ import java.util.UUID;
  * *******************************************************************
  */
 
-public record CustomUserDetails(UUID id ,String username ,String password ,
-                                boolean emailVerified ,String roleName ,
-                                boolean softDelete ,String universityNumber ,
-                                String email ,String deviceId) implements UserDetails {
+public record CustomUserDetails(UUID id ,
+                                String username ,
+                                String password ,
+                                boolean emailVerified ,
+                                String roleName ,
+                                boolean softDelete ,
+                                String universityNumber ,
+                                String email ,
+                                String deviceId) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -58,5 +63,38 @@ public record CustomUserDetails(UUID id ,String username ,String password ,
     @Override
     public boolean isEnabled() {
         return emailVerified && !softDelete;
+    }
+
+    // ===== Helper Methods =====
+    public UUID getAcademicMemberId() {
+        return id;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public String getUniversityNumber() {
+        return universityNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public boolean isSoftDeleted() {
+        return softDelete;
     }
 }

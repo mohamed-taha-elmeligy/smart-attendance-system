@@ -23,6 +23,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "lecture")
 @NoArgsConstructor
 @Getter
@@ -35,48 +36,39 @@ public class Lecture extends AuditableEntity {
     @Column("lecture_id")
     private UUID lectureId ;
 
-    @Setter
     @ToString.Include
     @Column("lecture_date")
     private LocalDate lectureDate ;
 
-    @Setter
     @ToString.Include
     @Column("day_of_week")
     private DayOfWeek dayOfWeek ;
 
-    @Setter
     @ToString.Include
     @Column("start_time")
     private LocalTime startTime ;
 
-    @Setter
     @ToString.Include
     @Column("end_time")
     private LocalTime endTime ;
 
-    @Setter
     @ToString.Include
     @Column("room")
     private String room ;
 
-    @Setter
     @ToString.Include
     @Column("status")
     private boolean status = true;
 
-    @Setter
     @ToString.Include
     @Column("soft_delete")
     private boolean softDelete = false;
 
     // ===== Relationships =====
-    @Setter
     @ToString.Include
     @Column("course_id")
     private UUID courseId ;
 
-    @Setter
     @ToString.Include
     @Column("instructor_academic_member_id")
     private UUID instructorAcademicMemberId;

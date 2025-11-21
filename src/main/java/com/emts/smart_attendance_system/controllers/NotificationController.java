@@ -3,11 +3,17 @@ package com.emts.smart_attendance_system.controllers;
 import com.emts.smart_attendance_system.converters.NotificationConverter;
 import com.emts.smart_attendance_system.dtos.responses.ResponseNotification;
 import com.emts.smart_attendance_system.enums.TypeNotification;
+import com.emts.smart_attendance_system.security.CustomUserDetails;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -32,71 +38,96 @@ import java.util.UUID;
 public class NotificationController {
     private NotificationConverter notificationConverter;
 
-    // ===== Find by Academic Member =====
-    @GetMapping("/find-by-member")
-    public Flux<ResponseNotification> findByAcademicMemberId(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Fetching all notifications for member: {}", academicMemberId);
-        return notificationConverter.findByAcademicMemberId(academicMemberId)
-                .onErrorResume(throwable -> {
-                    log.error("Error fetching notifications for member: {}", throwable.getMessage());
-                    return Flux.empty();
+    // Helper method to get current user's academicMemberId
+    private Mono<UUID> getCurrentUserAcademicMemberId() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .map(Authentication::getPrincipal)
+                .cast(CustomUserDetails.class)
+                .map(CustomUserDetails::getAcademicMemberId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated")));
+    }
+
+    // ===== Find by Current User =====
+    @GetMapping("/my-notifications")
+    public Flux<ResponseNotification> findMyNotifications() {
+        log.debug("Fetching all notifications for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Fetching notifications for academicMemberId: {}", academicMemberId);
+                    return notificationConverter.findByAcademicMemberId(academicMemberId)
+                            .onErrorResume(throwable -> {
+                                log.error("Error fetching notifications: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
-    @GetMapping("/find-unread-by-member")
-    public Flux<ResponseNotification> findUnreadByAcademicMemberId(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Fetching unread notifications for member: {}", academicMemberId);
-        return notificationConverter.findUnreadByAcademicMemberId(academicMemberId)
-                .onErrorResume(throwable -> {
-                    log.error("Error fetching unread notifications for member: {}", throwable.getMessage());
-                    return Flux.empty();
+    @GetMapping("/my-unread-notifications")
+    public Flux<ResponseNotification> findMyUnreadNotifications() {
+        log.debug("Fetching unread notifications for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Fetching unread notifications for academicMemberId: {}", academicMemberId);
+                    return notificationConverter.findUnreadByAcademicMemberId(academicMemberId)
+                            .onErrorResume(throwable -> {
+                                log.error("Error fetching unread notifications: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
-    @GetMapping("/find-read-by-member")
-    public Flux<ResponseNotification> findReadByAcademicMemberId(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Fetching read notifications for member: {}", academicMemberId);
-        return notificationConverter.findReadByAcademicMemberId(academicMemberId)
-                .onErrorResume(throwable -> {
-                    log.error("Error fetching read notifications for member: {}", throwable.getMessage());
-                    return Flux.empty();
+    @GetMapping("/my-read-notifications")
+    public Flux<ResponseNotification> findMyReadNotifications() {
+        log.debug("Fetching read notifications for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Fetching read notifications for academicMemberId: {}", academicMemberId);
+                    return notificationConverter.findReadByAcademicMemberId(academicMemberId)
+                            .onErrorResume(throwable -> {
+                                log.error("Error fetching read notifications: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
-    // ===== Find by Academic Member and Type =====
-    @GetMapping("/find-unread-by-member-and-type")
-    public Flux<ResponseNotification> findUnreadByAcademicMemberIdAndType(
-            @RequestParam @NonNull UUID academicMemberId,
+    // ===== Find by Current User and Type =====
+    @GetMapping("/my-unread-notifications-by-type")
+    public Flux<ResponseNotification> findMyUnreadNotificationsByType(
             @RequestParam @NonNull TypeNotification type) {
-        log.debug("Fetching unread {} notifications for member: {}", type, academicMemberId);
-        return notificationConverter.findUnreadByAcademicMemberIdAndType(academicMemberId, type)
-                .onErrorResume(throwable -> {
-                    log.error("Error fetching unread notifications: {}", throwable.getMessage());
-                    return Flux.empty();
+        log.debug("Fetching unread {} notifications for current user", type);
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Fetching unread {} notifications for academicMemberId: {}", type, academicMemberId);
+                    return notificationConverter.findUnreadByAcademicMemberIdAndType(academicMemberId, type)
+                            .onErrorResume(throwable -> {
+                                log.error("Error fetching unread notifications by type: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
-    @GetMapping("/find-read-by-member-and-type")
-    public Flux<ResponseNotification> findReadByAcademicMemberIdAndType(
-            @RequestParam @NonNull UUID academicMemberId,
+    @GetMapping("/my-read-notifications-by-type")
+    public Flux<ResponseNotification> findMyReadNotificationsByType(
             @RequestParam @NonNull TypeNotification type) {
-        log.debug("Fetching read {} notifications for member: {}", type, academicMemberId);
-        return notificationConverter.findReadByAcademicMemberIdAndType(academicMemberId, type)
-                .onErrorResume(throwable -> {
-                    log.error("Error fetching read notifications: {}", throwable.getMessage());
-                    return Flux.empty();
+        log.debug("Fetching read {} notifications for current user", type);
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Fetching read {} notifications for academicMemberId: {}", type, academicMemberId);
+                    return notificationConverter.findReadByAcademicMemberIdAndType(academicMemberId, type)
+                            .onErrorResume(throwable -> {
+                                log.error("Error fetching read notifications by type: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
     // ===== Count =====
-    @GetMapping("/count-unread-by-member")
-    public Mono<ResponseEntity<Long>> countUnreadByAcademicMemberId(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Counting unread notifications for member: {}", academicMemberId);
-        return notificationConverter.countUnreadByAcademicMemberId(academicMemberId)
+    @GetMapping("/my-unread-count")
+    public Mono<ResponseEntity<Long>> countMyUnreadNotifications() {
+        log.debug("Counting unread notifications for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMap(academicMemberId -> notificationConverter.countUnreadByAcademicMemberId(academicMemberId))
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(0L))
                 .onErrorResume(e -> {
@@ -105,11 +136,11 @@ public class NotificationController {
                 });
     }
 
-    @GetMapping("/count-read-by-member")
-    public Mono<ResponseEntity<Long>> countReadByAcademicMemberId(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Counting read notifications for member: {}", academicMemberId);
-        return notificationConverter.countReadByAcademicMemberId(academicMemberId)
+    @GetMapping("/my-read-count")
+    public Mono<ResponseEntity<Long>> countMyReadNotifications() {
+        log.debug("Counting read notifications for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMap(academicMemberId -> notificationConverter.countReadByAcademicMemberId(academicMemberId))
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(0L))
                 .onErrorResume(e -> {
@@ -118,12 +149,12 @@ public class NotificationController {
                 });
     }
 
-    @GetMapping("/count-unread-by-member-and-type")
-    public Mono<ResponseEntity<Long>> countUnreadByAcademicMemberIdAndType(
-            @RequestParam @NonNull UUID academicMemberId,
+    @GetMapping("/my-unread-count-by-type")
+    public Mono<ResponseEntity<Long>> countMyUnreadNotificationsByType(
             @RequestParam @NonNull TypeNotification type) {
-        log.debug("Counting unread {} notifications for member: {}", type, academicMemberId);
-        return notificationConverter.countUnreadByAcademicMemberIdAndType(academicMemberId, type)
+        log.debug("Counting unread {} notifications for current user", type);
+        return getCurrentUserAcademicMemberId()
+                .flatMap(academicMemberId -> notificationConverter.countUnreadByAcademicMemberIdAndType(academicMemberId, type))
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(0L))
                 .onErrorResume(e -> {
@@ -132,12 +163,12 @@ public class NotificationController {
                 });
     }
 
-    @GetMapping("/count-read-by-member-and-type")
-    public Mono<ResponseEntity<Long>> countReadByAcademicMemberIdAndType(
-            @RequestParam @NonNull UUID academicMemberId,
+    @GetMapping("/my-read-count-by-type")
+    public Mono<ResponseEntity<Long>> countMyReadNotificationsByType(
             @RequestParam @NonNull TypeNotification type) {
-        log.debug("Counting read {} notifications for member: {}", type, academicMemberId);
-        return notificationConverter.countReadByAcademicMemberIdAndType(academicMemberId, type)
+        log.debug("Counting read {} notifications for current user", type);
+        return getCurrentUserAcademicMemberId()
+                .flatMap(academicMemberId -> notificationConverter.countReadByAcademicMemberIdAndType(academicMemberId, type))
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(0L))
                 .onErrorResume(e -> {
@@ -146,7 +177,7 @@ public class NotificationController {
                 });
     }
 
-    // ===== Mark as Read/Unread =====
+    // ===== Mark as Read =====
     @PutMapping("/mark-as-read")
     public Mono<ResponseEntity<ResponseNotification>> markAsRead(
             @RequestParam @NonNull UUID notificationId) {
@@ -161,35 +192,41 @@ public class NotificationController {
     }
 
     @PutMapping("/mark-all-as-read")
-    public Flux<ResponseNotification> markAllAsRead(
-            @RequestParam @NonNull UUID academicMemberId) {
-        log.debug("Marking all notifications as read for member: {}", academicMemberId);
-        return notificationConverter.markAllAsRead(academicMemberId)
-                .onErrorResume(throwable -> {
-                    log.error("Error marking all notifications as read: {}", throwable.getMessage());
-                    return Flux.empty();
+    public Flux<ResponseNotification> markAllAsRead() {
+        log.debug("Marking all notifications as read for current user");
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Marking all notifications as read for academicMemberId: {}", academicMemberId);
+                    return notificationConverter.markAllAsRead(academicMemberId)
+                            .onErrorResume(throwable -> {
+                                log.error("Error marking all notifications as read: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
     @PutMapping("/mark-all-as-read-by-type")
     public Flux<ResponseNotification> markAllAsReadByType(
-            @RequestParam @NonNull UUID academicMemberId,
             @RequestParam @NonNull TypeNotification type) {
-        log.debug("Marking all {} notifications as read for member: {}", type, academicMemberId);
-        return notificationConverter.markAllAsReadByType(academicMemberId, type)
-                .onErrorResume(throwable -> {
-                    log.error("Error marking notifications as read by type: {}", throwable.getMessage());
-                    return Flux.empty();
+        log.debug("Marking all {} notifications as read for current user", type);
+        return getCurrentUserAcademicMemberId()
+                .flatMapMany(academicMemberId -> {
+                    log.debug("Marking all {} notifications as read for academicMemberId: {}", type, academicMemberId);
+                    return notificationConverter.markAllAsReadByType(academicMemberId, type)
+                            .onErrorResume(throwable -> {
+                                log.error("Error marking notifications as read by type: {}", throwable.getMessage());
+                                return Flux.empty();
+                            });
                 });
     }
 
     // ===== Delete =====
     @DeleteMapping("/delete")
-    public Mono<ResponseEntity<Boolean>> deleteByAcademicMemberIdAndNotificationId(
-            @RequestParam @NonNull UUID academicMemberId,
+    public Mono<ResponseEntity<Boolean>> deleteNotification(
             @RequestParam @NonNull UUID notificationId) {
-        log.debug("Deleting notification: {} for member: {}", notificationId, academicMemberId);
-        return notificationConverter.deleteByAcademicMemberIdAndNotificationId(academicMemberId, notificationId)
+        log.debug("Deleting notification: {}", notificationId);
+        return getCurrentUserAcademicMemberId()
+                .flatMap(academicMemberId -> notificationConverter.deleteByAcademicMemberIdAndNotificationId(academicMemberId, notificationId))
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(false))
                 .onErrorResume(e -> {
