@@ -27,8 +27,11 @@ import java.util.UUID;
 public class RequestAttendance {
 
     @NotBlank(message = "IP address is required")
-    @Pattern(regexp = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(::1|([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4})$",
-            message = "Invalid IP address format")
+    @Pattern(
+            regexp = "^((25[0-5]|2[0-4][0-9]|[01]?\\d?\\d)(\\.(25[0-5]|2[0-4][0-9]|[01]?\\d?\\d)){3}|([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::1)$",
+            message = "Invalid IP address format"
+    )
+
     private String ipAddress;
 
     @NotBlank(message = "Device ID is required")

@@ -123,9 +123,6 @@ public class Attendance extends AuditableEntity {
     }
 
     // ===== Helper Methods for Present =====
-    public boolean isPresented(){
-        return isPresent ;
-    }
     public String getPresentedText() {
         return isPresent ? "Present: " + studentAcademicMemberId : "Absent: " + studentAcademicMemberId;
     }
