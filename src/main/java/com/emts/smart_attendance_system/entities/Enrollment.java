@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
+
 /**
  * *******************************************************************
  * File: null.java
@@ -19,6 +20,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "enrollment")
 @NoArgsConstructor
 @Getter
@@ -31,16 +33,13 @@ public class Enrollment extends AuditableEntity {
     @Column("enrollment_id")
     private UUID enrollmentId ;
 
-    @Setter
     @Column("soft_delete")
     private boolean softDelete = false;
 
     // ===== Relationships =====
-    @Setter
     @Column("course_id")
     private UUID courseId ;
 
-    @Setter
     @Column("student_academic_member")
     private UUID studentAcademicMember ;
 

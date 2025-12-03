@@ -26,10 +26,6 @@ import java.util.UUID;
 @Builder
 public class RequestQrCode {
 
-    @NotBlank(message = "UUID Token Hash is required")
-    @Size(min = 10, max = 255, message = "UUID Token Hash must be between 10 and 255 characters")
-    private String uuidTokenHash;
-
     @NotBlank(message = "Network Info is required")
     @Size(min = 5, max = 255, message = "Network Info must be between 5 and 255 characters")
     private String networkInfo;

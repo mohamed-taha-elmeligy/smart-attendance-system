@@ -36,6 +36,7 @@ public interface QrCodeMapper {
     @Mapping(target = "expired", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "uuidTokenHash", ignore = true)
     QrCode toEntity(RequestQrCode request);
 
     @Mapping(target = "activatedStatus", expression = "java(entity.getActivatedStatus())")
@@ -47,6 +48,7 @@ public interface QrCodeMapper {
     @Mapping(target = "expired", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "uuidTokenHash", ignore = true)
     void updateEntityFromRequest(RequestQrCode request, @MappingTarget QrCode entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -56,6 +58,7 @@ public interface QrCodeMapper {
     @Mapping(target = "expired", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "uuidTokenHash", ignore = true)
     void partialUpdate(RequestQrCode request, @MappingTarget QrCode entity);
 
     // ===== Reactive Helper Methods (Mono/Flux wrappers) =====

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /**
  * *******************************************************************
- * File: null.java
+ * File: QrCode.java
  * Package: com.emts.smart_attendance_system.entities
  * Project: eMTS Smart Attendance System
  * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
@@ -30,6 +30,7 @@ public class QrCode extends AuditableEntity {
 
     // ===== Attributes =====
     @Id
+    @Setter
     @ToString.Include
     @Column("qr_code_id")
     private UUID qrCodeId ;
@@ -54,6 +55,7 @@ public class QrCode extends AuditableEntity {
     @Column("duration_seconds")
     private long durationSeconds ;
 
+    @Getter
     @Setter
     @ToString.Include
     @Column("activated")
@@ -99,10 +101,6 @@ public class QrCode extends AuditableEntity {
     // ===== Helper Methods for Activated =====
     public String getActivatedStatus() {
         return activated ? "QR Code Activated: " + qrCodeId : "QR Code Inactivated: " + qrCodeId;
-    }
-
-    public boolean isActivated() {
-        return activated;
     }
 
     public QrCode inactivated() {

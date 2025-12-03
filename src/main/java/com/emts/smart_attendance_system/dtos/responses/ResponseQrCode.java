@@ -31,8 +31,6 @@ public class ResponseQrCode {
 
     private String uuidTokenHash;
 
-    private String networkInfo;
-
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant expiresAt;
 

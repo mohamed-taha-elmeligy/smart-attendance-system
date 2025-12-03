@@ -19,7 +19,7 @@ import java.util.UUID;
  * File: null.java
  * Package: com.emts.smart_attendance_system.converters
  * Project: eMTS Smart Attendance System
- * © ٢٠٢٥ Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
+ * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
  * This file is part of the eMTS Smart Attendance System.
  * Created on: 21/11/2025
  * Port Number: 8083
