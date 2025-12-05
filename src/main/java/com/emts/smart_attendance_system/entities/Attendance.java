@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /**
  * *******************************************************************
- * File: null.java
+ * File: Attendance.java
  * Package: com.emts.smart_attendance_system.entities
  * Project: eMTS Smart Attendance System
  * © 2025 Mohamed Taha Elmeligy - eMTS (e Modern Tech Solutions)
@@ -32,9 +32,9 @@ public class Attendance extends AuditableEntity {
     @Id
     @ToString.Include
     @Column("attendance_id")
+    @Setter
     private UUID attendanceId ;
 
-    @Setter
     @ToString.Include
     @Column("check_in_time")
     private Instant checkInTime ;
@@ -97,10 +97,6 @@ public class Attendance extends AuditableEntity {
 
     public boolean isPresent() {
         return isPresent;
-    }
-
-    public void setPresent(boolean present) {
-        this.isPresent = present;
     }
 
 

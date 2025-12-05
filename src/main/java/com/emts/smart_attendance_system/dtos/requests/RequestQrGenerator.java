@@ -3,6 +3,7 @@ package com.emts.smart_attendance_system.dtos.requests;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -17,9 +18,14 @@ import java.util.UUID;
  * Port Number: 8083
  * *******************************************************************
  */
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RequestQrGenerator {
     @NotNull(message = "Lecture ID is required")
-    private UUID lectureId;
+    private UUID qrCodeId;
 
     @NotBlank(message = "Token hash is required")
     @Size(min = 5, max = 255, message = "Token hash must be between 5 and 255 characters")

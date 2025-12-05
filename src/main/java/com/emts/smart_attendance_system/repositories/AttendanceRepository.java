@@ -27,9 +27,6 @@ import java.util.UUID;
 @Repository
 public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> {
 
-    // ===== Find By ID =====
-    Mono<Attendance> findByAttendanceId(UUID attendanceId);
-
     // ===== Find By Lecture =====
     Flux<Attendance> findByLectureId(UUID lectureId);
 
@@ -47,22 +44,22 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
 
     // ===== Count Present in Lecture =====
     @Query("""
-            SELECT COUNT(*) FROM attendance 
+            SELECT COUNT(*) FROM attendance
             WHERE lecture_id = :lectureId AND is_present = true
             """)
     Mono<Long> countPresentInLecture(@Param("lectureId") UUID lectureId);
 
     // ===== Count Absent in Lecture =====
     @Query("""
-            SELECT COUNT(*) FROM attendance 
+            SELECT COUNT(*) FROM attendance
             WHERE lecture_id = :lectureId AND is_present = false
             """)
     Mono<Long> countAbsentInLecture(@Param("lectureId") UUID lectureId);
 
     // ===== Find Attendance by Time Range =====
     @Query("""
-            SELECT * FROM attendance 
-            WHERE lecture_id = :lectureId 
+            SELECT * FROM attendance
+            WHERE lecture_id = :lectureId
             AND check_in_time BETWEEN :startTime AND :endTime
             """)
     Flux<Attendance> findByLectureIdAndTimeRange(
@@ -71,17 +68,13 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
             @Param("endTime") Instant endTime
     );
 
-    // ===== Find Verified Location Attendance =====
-    Flux<Attendance> findByLectureIdAndLocationVerified(UUID lectureId, boolean locationVerified);
-
-
     // ===== Find by Device ID =====
     Flux<Attendance> findByDeviceId(String deviceId);
 
     // ===== Find Student Attendance in Lecture =====
     @Query("""
-            SELECT * FROM attendance 
-            WHERE student_academic_member_id = :studentId 
+            SELECT * FROM attendance
+            WHERE student_academic_member_id = :studentId
             AND lecture_id = :lectureId
             ORDER BY check_in_time DESC
             LIMIT 1
@@ -91,9 +84,18 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
             @Param("lectureId") UUID lectureId
     );
 
+    @Query("""
+           SELECT * FROM attendance
+           WHERE device_id = :deviceId
+           AND lecture_id = :lectureId
+           LIMIT 1
+           """)
+    Mono<Attendance> findByDeviceIdAndLectureId(String deviceId, UUID lectureId);
+
+
     // ===== Find Student Attendance History =====
     @Query("""
-            SELECT * FROM attendance 
+            SELECT * FROM attendance
             WHERE student_academic_member_id = :studentId
             ORDER BY check_in_time DESC
             LIMIT :limit
@@ -105,9 +107,9 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
 
     // ===== Check if Student Already Checked In =====
     @Query("""
-            SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END 
-            FROM attendance 
-            WHERE student_academic_member_id = :studentId 
+            SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END
+            FROM attendance
+            WHERE student_academic_member_id = :studentId
             AND lecture_id = :lectureId
             """)
     Mono<Boolean> existsByStudentAndLecture(
@@ -115,21 +117,18 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
             @Param("lectureId") UUID lectureId
     );
 
+
     // ===== Get Attendance Statistics by Lecture =====
     @Query("""
-            SELECT 
+            SELECT
                 lecture_id,
                 COUNT(*) as total,
                 SUM(CASE WHEN is_present = true THEN 1 ELSE 0 END) as present,
                 SUM(CASE WHEN is_present = false THEN 1 ELSE 0 END) as absent,
                 SUM(CASE WHEN location_verified = true THEN 1 ELSE 0 END) as verified
-            FROM attendance 
+            FROM attendance
             WHERE lecture_id = :lectureId
             GROUP BY lecture_id
             """)
     Mono<AttendanceStatisticsResponse> getAttendanceStatistics(@Param("lectureId") UUID lectureId);
-
-    // ===== Find Attendance by Time Period =====
-    Flux<Attendance> findByCheckInTimeBetween(Instant startTime, Instant endTime);
-
 }

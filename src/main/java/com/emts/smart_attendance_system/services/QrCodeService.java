@@ -66,21 +66,6 @@ public class QrCodeService {
         log.debug("Fetching all QR codes for lecture: {}", lectureId);
         return qrCodeRepository.findByLectureId(lectureId);
     }
-
-    // ===== Verify Token =====
-    public Mono<Boolean> verifyToken(String rawToken, UUID qrCodeId) {
-        log.debug("Verifying token for QR Code: {}", qrCodeId);
-        return findByIdActive(qrCodeId)
-                .map(qrCode -> {
-                    boolean matches = qrTokenGenerator.matches(rawToken, qrCode.getUuidTokenHash());
-                    log.debug("Token verification result for QR Code {}: {}", qrCodeId, matches);
-                    return matches;
-                })
-                .defaultIfEmpty(false)
-                .onErrorReturn(false);
-    }
-
-
     // ===== Find Expired/Inactive =====
 
     public Flux<QrCode> findExpiredByLectureId(UUID lectureId) {
