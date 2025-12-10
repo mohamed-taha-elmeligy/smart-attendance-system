@@ -138,10 +138,10 @@ public class AttendanceProcessor {
     }
 
     private Attendance buildAttendance(Lecture lecture, Enrollment enrollment) {
-        return Attendance.builder()
-                .studentAcademicMemberId(enrollment.getStudentAcademicMember())
-                .lectureId(lecture.getLectureId())
-                .build();
+        Attendance attendance = new Attendance();
+        attendance.setStudentAcademicMemberId(enrollment.getStudentAcademicMember());
+        attendance.setLectureId(lecture.getLectureId());
+        return attendance;
     }
 
     private Flux<Lecture> getLectureInDay() {
