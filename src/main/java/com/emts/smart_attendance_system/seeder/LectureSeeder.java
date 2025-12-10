@@ -3,6 +3,8 @@ package com.emts.smart_attendance_system.seeder;
 import com.emts.smart_attendance_system.entities.Lecture;
 import com.emts.smart_attendance_system.services.LectureService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -24,7 +26,7 @@ import java.time.LocalDate;
 
 @Slf4j(topic = "SeederLogger")
 @Component
-public class LectureSeeder {
+public class LectureSeeder{
 
     private final LectureService lectureService;
 
@@ -82,4 +84,5 @@ public class LectureSeeder {
         lecture.setLectureId(null);
         return lecture;
     }
+
 }

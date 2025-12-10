@@ -40,9 +40,15 @@ public class AttendanceService {
     public Flux<Attendance> addAttendances(Flux<Attendance> attendanceFlux) {
         return attendanceFlux
                 .flatMap(attendance ->
-                        attendanceRepository.save(attendance)
-                                .retryWhen(retryConfig.createRetrySpec("save-attendance"))
-                                .onErrorResume(e -> Mono.just(attendance))
+                        hasCheckedIn(attendance.getStudentAcademicMemberId(), attendance.getLectureId())
+                                .flatMap(exists -> {
+                                    if (Boolean.TRUE.equals(exists)) {
+                                        return Mono.empty();
+                                    }
+                                    return attendanceRepository.save(attendance)
+                                            .retryWhen(retryConfig.createRetrySpec("save-attendance"))
+                                            .onErrorResume(e -> Mono.just(attendance));
+                                })
                 );
     }
 
