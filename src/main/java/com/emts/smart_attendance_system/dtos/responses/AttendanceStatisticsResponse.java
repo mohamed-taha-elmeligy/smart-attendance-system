@@ -2,6 +2,9 @@ package com.emts.smart_attendance_system.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.UUID;
 
 /**
@@ -16,8 +19,10 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class AttendanceStatisticsResponse {
     private UUID lectureId;
     private Long total;

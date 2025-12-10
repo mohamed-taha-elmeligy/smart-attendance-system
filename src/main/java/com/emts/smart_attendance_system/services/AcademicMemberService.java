@@ -257,6 +257,10 @@ public class AcademicMemberService {
         return academicMemberRepository.findByAcademicYearIdAndRoleIdAndSoftDeleteFalse(academicYearId,roleId);
     }
 
+    public Flux<AcademicMember> getAll(){
+        return academicMemberRepository.findAll();
+    }
+
 
     private boolean isSystemRole(String roleName) {
         return RoleData.DEVELOPER.name().equals(roleName);

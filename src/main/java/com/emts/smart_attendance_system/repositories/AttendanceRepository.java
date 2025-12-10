@@ -120,15 +120,15 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
 
     // ===== Get Attendance Statistics by Lecture =====
     @Query("""
-            SELECT
-                lecture_id,
-                COUNT(*) as total,
-                SUM(CASE WHEN is_present = true THEN 1 ELSE 0 END) as present,
-                SUM(CASE WHEN is_present = false THEN 1 ELSE 0 END) as absent,
-                SUM(CASE WHEN location_verified = true THEN 1 ELSE 0 END) as verified
-            FROM attendance
-            WHERE lecture_id = :lectureId
-            GROUP BY lecture_id
-            """)
+        SELECT
+            lecture_id as lectureId,
+            COUNT(*) as total,
+            SUM(CASE WHEN is_present = true THEN 1 ELSE 0 END) as present,
+            SUM(CASE WHEN is_present = false THEN 1 ELSE 0 END) as absent,
+            SUM(CASE WHEN location_verified = true THEN 1 ELSE 0 END) as verified
+        FROM attendance
+        WHERE lecture_id = :lectureId
+        GROUP BY lecture_id
+        """)
     Mono<AttendanceStatisticsResponse> getAttendanceStatistics(@Param("lectureId") UUID lectureId);
 }

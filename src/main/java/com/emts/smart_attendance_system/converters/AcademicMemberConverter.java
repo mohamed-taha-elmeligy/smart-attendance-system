@@ -39,6 +39,10 @@ public class AcademicMemberConverter {
         );
     }
 
+    public Flux<AcademicMember> getAll(){
+        return academicMemberService.getAll();
+    }
+
     public Mono<BatchResult> addAll(Flux<RequestAcademicMember> requestFlux) {
         return academicMemberService.addAll(
                 requestFlux.map(academicMemberMapper::toEntity)

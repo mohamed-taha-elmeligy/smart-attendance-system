@@ -4,6 +4,7 @@ import com.emts.smart_attendance_system.converters.AcademicMemberConverter;
 import com.emts.smart_attendance_system.dtos.requests.RequestAcademicMember;
 import com.emts.smart_attendance_system.dtos.responses.BatchResponse;
 import com.emts.smart_attendance_system.dtos.responses.ResponseAcademicMember;
+import com.emts.smart_attendance_system.entities.AcademicMember;
 import com.emts.smart_attendance_system.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -47,6 +48,11 @@ public class AcademicMemberController {
     private static final int MAX_BATCH_SIZE = 10000;
     private static final String SUCCESS = "success";
     private static final String MESSAGE = "message";
+
+    @GetMapping("/get-all")
+    public Flux<AcademicMember> getAll(){
+        return academicMemberConverter.getAll();
+    }
 
     @PostMapping("/add")
     public Mono<ResponseEntity<ResponseAcademicMember>> add(

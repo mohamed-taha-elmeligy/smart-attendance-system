@@ -44,7 +44,8 @@ public class AttendanceProcessor {
     @Scheduled(cron = "0 0 6 * * *")
     public void scheduleAttendanceCreation() {
         log.info("Start creating attendance records for daily lectures");
-        processAttendances(createAttendance());
+//        processAttendances(createAttendance());
+        attendanceService.addAttendances(createAttendance());
     }
 
     @Scheduled(cron = "0 */15 * * * *")
