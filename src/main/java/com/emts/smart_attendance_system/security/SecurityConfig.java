@@ -80,20 +80,21 @@ public class SecurityConfig {
 
         corsConfiguration.setAllowedOriginPatterns(List.of(
                 // Local Development
-                "http://localhost:8080",
-                "http://localhost:8083",
-                "http://localhost:3000",      // React
-                "http://localhost:5173",      // Vue
-                "http://localhost:4200",      // Angular
-                "http://127.0.0.1:*",
-
-                // Production
-                "https://mis.kfs-hiet.edu.eg",
-                "https://admin.mis.kfs-hiet.edu.eg",
-
-                // Railway - السماح بأي subdomain
-                "https://*.up.railway.app",
-                "http://*.up.railway.app"
+//                "http://localhost:8080",
+//                "http://localhost:8083",
+//                "http://localhost:3000",      // React
+//                "http://localhost:5173",      // Vue
+//                "http://localhost:4200",      // Angular
+//                "http://127.0.0.1:*",
+//
+//                // Production
+//                "https://mis.kfs-hiet.edu.eg",
+//                "https://admin.mis.kfs-hiet.edu.eg",
+//
+//                // Railway - السماح بأي subdomain
+//                "https://*.up.railway.app",
+//                "http://*.up.railway.app"
+                "*"
         ));
 
         corsConfiguration.setAllowedMethods(List.of(
@@ -103,6 +104,8 @@ public class SecurityConfig {
         corsConfiguration.setExposedHeaders(List.of("Authorization", "Content-Type", "X-Total-Count"));
         corsConfiguration.setAllowCredentials(false);
         corsConfiguration.setMaxAge(3600L);
+
+        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
