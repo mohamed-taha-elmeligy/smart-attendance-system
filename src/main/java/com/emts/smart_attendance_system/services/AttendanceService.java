@@ -70,6 +70,19 @@ public class AttendanceService {
                 });
     }
 
+    public Mono<Boolean> developPresence(UUID lectureId,UUID studentId,UUID qrCodeId ){
+        return findLatestAttendanceForStudentInLecture(studentId,lectureId)
+                .flatMap(attendance -> {
+                    attendance.setDeviceId("ALL45HJ465");
+                    attendance.setQrCodeId(qrCodeId);
+                    attendance.setLocationVerified(true);
+                    attendance.setIpAddress("192.168.1.10");
+                    return attendanceRepository.save(attendance)
+                            .retryWhen(retryConfig.createRetrySpec("update-attendance"))
+                            .map(saved -> true);
+                });
+    }
+
     // ===== Find By Lecture =====
     public Flux<Attendance> findByLectureId(UUID lectureId) {
         log.debug("Finding attendance records for lecture ID: {}", lectureId);

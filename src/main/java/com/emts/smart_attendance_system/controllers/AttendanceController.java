@@ -85,6 +85,21 @@ public class AttendanceController {
                 .doOnError(e -> log.error("Error fetching attendance by lecture: {}", e.getMessage()));
     }
 
+    @PutMapping("/develop-mark-present")
+    public Mono<ResponseEntity<Boolean>> developPresence(
+            @RequestParam @NonNull UUID lectureId,
+            @RequestParam @NonNull UUID studentId,
+            @RequestParam @NonNull UUID qrCodeId) {
+
+        return attendanceConverter.developPresence(lectureId, studentId, qrCodeId)
+                .doOnNext(result -> log.debug("Marked attendance for lecture: {}", lectureId))
+                .map(ResponseEntity::ok)
+                .onErrorResume(ex -> {
+                    log.error("Failed to mark attendance for lecture: {}", lectureId, ex);
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
+    }
+
     @GetMapping("/find-by-student")
     public Flux<ResponseAttendance> findByStudentId(
             @RequestParam @NonNull UUID studentId) {

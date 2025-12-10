@@ -45,18 +45,18 @@ public class AttendanceValidator {
         return attendanceRepository.findLatestAttendanceForStudentInLecture(studentId, lectureId)
                 .hasElement()
                 .flatMap(studentExists -> {
-//                    if (Boolean.FALSE.equals(studentExists)) {
-//                        log.warn("Student not found or invalid: {}", studentId);
-//                        return Mono.just(false);
-//                    }
+                    if (Boolean.FALSE.equals(studentExists)) {
+                        log.warn("Student not found or invalid: {}", studentId);
+                        return Mono.just(false);
+                    }
 
                     return checkDeviceId(deviceId, studentId,lectureId);
                 })
                 .flatMap(deviceValid -> {
-//                    if (Boolean.FALSE.equals(deviceValid)) {
-//                        log.warn("Device validation failed: {}", deviceId);
-//                        return Mono.just(false);
-//                    }
+                    if (Boolean.FALSE.equals(deviceValid)) {
+                        log.warn("Device validation failed: {}", deviceId);
+                        return Mono.just(false);
+                    }
 
                     return validateQrCode(qrCodeId, requestQrGenerator, requestAttendance);
                 });
@@ -68,11 +68,11 @@ public class AttendanceValidator {
                         log.info("Finding attendance with deviceId and lectureId ID: {}", find.getAttendanceId())
                 )
                 .map(attendance -> {
-//                    boolean isSameStudent = attendance.getStudentAcademicMemberId().equals(studentId);
-//                    if (!isSameStudent) {
-//                        log.warn("Device already used by another student: {}", deviceId);
-//                        return false;
-//                    }
+                    boolean isSameStudent = attendance.getStudentAcademicMemberId().equals(studentId);
+                    if (!isSameStudent) {
+                        log.warn("Device already used by another student: {}", deviceId);
+                        return false;
+                    }
                     return true;
                 })
                 .onErrorReturn(true);
@@ -81,26 +81,26 @@ public class AttendanceValidator {
     private Mono<Boolean> validateQrCode(UUID qrCodeId, RequestQrGenerator requestQrGenerator, RequestAttendance requestAttendance) {
         return qrCodeService.findByIdActive(qrCodeId)
                 .flatMap(qrCode -> {
-//                    boolean tokenMatches = qrTokenGenerator.matches(
-//                            requestQrGenerator.getUuidTokenHash(),
-//                            qrCode.getUuidTokenHash());
-//
-//                    if (!tokenMatches) {
-//                        log.warn("Token hash mismatch for QR Code: {}", qrCodeId);
-//                        return Mono.just(false);
-//                    }
-//
-//                    if (qrCode.getExpiresAt().isBefore(Instant.now())) {
-//                        log.warn("QR Code expired: {}", qrCodeId);
-//                        return qrCodeService.expireQrCode(qrCode.getQrCodeId())
-//                                .then(Mono.just(false));
-//                    }
-//
-//                    boolean ipMatches = qrCode.getNetworkInfo().matches(requestAttendance.getIpAddress());
-//                    if (!ipMatches) {
-//                        log.warn("IP address mismatch for QR Code: {}", qrCodeId);
-//                        return Mono.just(false);
-//                    }
+                    boolean tokenMatches = qrTokenGenerator.matches(
+                            requestQrGenerator.getUuidTokenHash(),
+                            qrCode.getUuidTokenHash());
+
+                    if (!tokenMatches) {
+                        log.warn("Token hash mismatch for QR Code: {}", qrCodeId);
+                        return Mono.just(false);
+                    }
+
+                    if (qrCode.getExpiresAt().isBefore(Instant.now())) {
+                        log.warn("QR Code expired: {}", qrCodeId);
+                        return qrCodeService.expireQrCode(qrCode.getQrCodeId())
+                                .then(Mono.just(false));
+                    }
+
+                    boolean ipMatches = qrCode.getNetworkInfo().matches(requestAttendance.getIpAddress());
+                    if (!ipMatches) {
+                        log.warn("IP address mismatch for QR Code: {}", qrCodeId);
+                        return Mono.just(false);
+                    }
 
                     log.info("Attendance validated successfully for student: {}", requestAttendance.getStudentAcademicMemberId());
                     return Mono.just(true);

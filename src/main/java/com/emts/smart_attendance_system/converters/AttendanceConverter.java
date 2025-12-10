@@ -37,6 +37,10 @@ public class AttendanceConverter {
         return attendanceService.presence(requestAttendance,requestQrGenerator);
     }
 
+    public Mono<Boolean> developPresence(UUID lectureId,UUID studentId,UUID qrCodeId ){
+        return attendanceService.developPresence(lectureId,studentId,qrCodeId);
+    }
+
     public Flux<ResponseAttendance> findByLectureId(UUID lectureId) {
         return attendanceMapper.toResponseFlux(
                 attendanceService.findByLectureId(lectureId)
