@@ -94,11 +94,11 @@ public class AcademicMember extends AuditableEntity {
                            @NonNull String passwordHash,
                            @NonNull LocalDate birthdate,
                            @NonNull String universityNumber,
-                           @NonNull String email,
+                           String email,
                            @NonNull String phone,
-                           @NonNull UUID academicYearId,
-                           @NonNull UUID roleId,
-                           @NonNull UUID universityId,
+                           UUID academicYearId,
+                           UUID roleId,
+                           UUID universityId,
                            @NonNull String deviceId){
         this.firstName = firstName;
         this.lastName = lastName;

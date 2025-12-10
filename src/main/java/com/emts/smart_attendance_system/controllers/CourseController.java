@@ -85,6 +85,17 @@ public class CourseController {
                 });
     }
 
+    @GetMapping("/search-instructor")
+    public Flux<ResponseCourse> findByInstructorId(
+            @RequestParam @NonNull UUID instructor){
+        log.debug("Searching courses by Instructor Id: {}", instructor);
+        return courseConverter.findByInstructorId(instructor)
+                .onErrorResume(throwable -> {
+                    log.error("Error searching courses Instructor Id: {}", throwable.getMessage());
+                    return Flux.empty();
+                });
+    }
+
     @DeleteMapping("/delete")
     public Mono<ResponseEntity<ResponseCourse>> softDelete(
             @RequestParam @NonNull UUID courseId){

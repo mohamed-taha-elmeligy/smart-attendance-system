@@ -44,4 +44,7 @@ public class RequestCourse {
 
     @NotNull(message = "Academic Year ID is required")
     private UUID academicYearId;
+
+    @NotNull(message = "Instructor ID is required")
+    private UUID instructorAcademicMemberId;
 }

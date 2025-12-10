@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -34,10 +35,23 @@ public class LectureService {
     // ===== Create =====
     public Mono<Lecture> addOne(Lecture lecture) {
         log.info("Attempting to save Lecture for course: {}", lecture.getCourseId());
-        return lectureRepository.save(lecture)
-                .retryWhen(retryConfig.createRetrySpec("Add Lecture"))
-                .doOnSuccess(saved -> log.info("Saved Lecture ID: {}", saved.getLectureId()));
+
+        return lectureRepository.existsByLectureDateAndSoftDeleteFalse(
+                        lecture.getLectureDate()
+                )
+                .flatMap(exists -> {
+                    if (exists) {
+                        log.warn("Lecture for course '{}' on '{}' by instructor '{}' already exists. Skipping save.",
+                                lecture.getCourseId(), lecture.getLectureDate(), lecture.getInstructorAcademicMemberId());
+                        return Mono.empty();
+                    } else {
+                        return lectureRepository.save(lecture)
+                                .retryWhen(retryConfig.createRetrySpec("Add Lecture"))
+                                .doOnSuccess(saved -> log.info("Saved Lecture ID: {}", saved.getLectureId()));
+                    }
+                });
     }
+
 
     // ===== Update =====
     public Mono<Lecture> update(Lecture lecture) {
@@ -178,6 +192,10 @@ public class LectureService {
     public Flux<Lecture> findDeleted() {
         log.debug("Fetching all deleted lectures");
         return lectureRepository.findDeleted();
+    }
+    public Flux<Lecture>findByDayOfWeek(DayOfWeek dayOfWeek) {
+        log.debug("Fetching lectures by DayOfWeek: {}",dayOfWeek);
+        return lectureRepository.findByDayOfWeek(dayOfWeek);
     }
 
     // ===== Count =====

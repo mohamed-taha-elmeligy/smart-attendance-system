@@ -57,18 +57,24 @@ public class Course extends AuditableEntity {
     @Column("academic_year_id")
     private UUID academicYearId ;
 
+    @ToString.Include
+    @Column("instructor_academic_member_id")
+    private UUID instructorAcademicMemberId;
+
     // ===== Builder =====
     @Builder
     public Course (@NonNull String code,
                    @NonNull String name,
                    @NonNull String description,
-                   @NonNull UUID universityId,
-                   @NonNull UUID academicYearId){
+                   UUID universityId,
+                   UUID academicYearId,
+                   UUID instructorAcademicMemberId){
         this.code = code;
         this.name = name;
         this.description = description;
         this.universityId = universityId;
         this.academicYearId = academicYearId;
+        this.instructorAcademicMemberId = instructorAcademicMemberId;
         this.softDelete = false;
     }
 

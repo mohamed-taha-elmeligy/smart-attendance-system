@@ -31,16 +31,26 @@ public class CourseService {
     private CourseRepository courseRepository;
     private RetryConfig retryConfig;
 
-    public Mono<Course> addOne (Course course){
+    public Mono<Course> addOne(Course course) {
         log.info("Attempting to save Course: {}", course.getName());
-        return courseRepository.save(course)
-                .retryWhen(retryConfig.createRetrySpec("Add Course"))
-                .doOnSuccess(saved-> log.info("Saved Course ID: {}", saved.getCourseId()))
-                .onErrorResume(DuplicateKeyException.class, e -> {
-                    log.warn("Course '{}' already exists. Skipping save.", course.getName());
-                    return Mono.empty();
+        return courseRepository.existsByCodeAndUniversityIdAndAcademicYearIdAndSoftDeleteFalse(
+                        course.getCode(),
+                        course.getUniversityId(),
+                        course.getAcademicYearId()
+                )
+                .flatMap(exists -> {
+                    if (exists) {
+                        log.warn("Course '{}' with code '{}' already exists. Skipping save.",
+                                course.getName(), course.getCode());
+                        return Mono.empty(); // نتجاوز الإدراج
+                    } else {
+                        return courseRepository.save(course)
+                                .retryWhen(retryConfig.createRetrySpec("Add Course"))
+                                .doOnSuccess(saved -> log.info("Saved Course ID: {}", saved.getCourseId()));
+                    }
                 });
     }
+
 
     public Mono<Course> update (Course course){
         log.info("Attempting to update Course: {}", course.getCourseId());
@@ -66,6 +76,9 @@ public class CourseService {
 
     public Flux<Course> findByAcademicYearId(UUID academicYearId){
         return courseRepository.findByAcademicYearIdAndSoftDeleteFalse(academicYearId);
+    }
+    public Flux<Course> findByInstructorId(UUID instructor){
+        return courseRepository.findByInstructorAcademicMemberIdAndSoftDeleteFalse(instructor);
     }
 
     public Mono<Course> softDelete(UUID courseId){

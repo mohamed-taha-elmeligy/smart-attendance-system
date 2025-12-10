@@ -50,6 +50,9 @@ public class CourseConverter {
     public Flux<ResponseCourse> findByAcademicYearId(UUID academicYearId){
         return courseMapper.toResponseFlux(courseService.findByAcademicYearId(academicYearId));
     }
+    public Flux<ResponseCourse> findByInstructorId(UUID instructor){
+        return courseMapper.toResponseFlux(courseService.findByInstructorId(instructor));
+    }
 
     public Mono<ResponseCourse> softDelete(UUID courseId){
         return courseMapper.toResponseMono(courseService.softDelete(courseId));

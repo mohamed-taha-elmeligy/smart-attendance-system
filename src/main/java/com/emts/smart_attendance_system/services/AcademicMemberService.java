@@ -3,6 +3,7 @@ package com.emts.smart_attendance_system.services;
 import com.emts.smart_attendance_system.config.RetryConfig;
 import com.emts.smart_attendance_system.entities.AcademicMember;
 import com.emts.smart_attendance_system.enums.RoleData;
+import com.emts.smart_attendance_system.processors.StudentEnrollmentProcessor;
 import com.emts.smart_attendance_system.repositories.AcademicMemberRepository;
 import com.emts.smart_attendance_system.utils.BatchResult;
 import jakarta.annotation.PreDestroy;
@@ -33,6 +34,7 @@ import java.util.UUID;
 @Slf4j
 public class AcademicMemberService {
 
+    private final StudentEnrollmentProcessor enrollmentProcessor;
     private final AcademicMemberRepository academicMemberRepository;
     private final RetryConfig retryConfig;
     private final PasswordEncoder passwordEncoder;
@@ -40,10 +42,11 @@ public class AcademicMemberService {
     private final Scheduler passwordScheduler;
 
     public AcademicMemberService(
-            AcademicMemberRepository academicMemberRepository,
+            StudentEnrollmentProcessor enrollmentProcessor, AcademicMemberRepository academicMemberRepository,
             RetryConfig retryConfig,
             PasswordEncoder passwordEncoder,
             RoleService roleService) {
+        this.enrollmentProcessor = enrollmentProcessor;
         this.academicMemberRepository = academicMemberRepository;
         this.retryConfig = retryConfig;
         this.passwordEncoder = passwordEncoder;
@@ -55,16 +58,55 @@ public class AcademicMemberService {
     }
 
     public Mono<AcademicMember> addOne(AcademicMember academicMember) {
+        if (academicMember == null) {
+            return Mono.error(
+                    new IllegalArgumentException("AcademicMember cannot be null")
+            );
+        }
         log.info("Attempting to save a new AcademicMember with username: {}", academicMember.getUsername());
-        return Mono.just(academicMember)
-                .map(member -> {
-                    member.setPasswordHash(passwordEncoder.encode(member.getPasswordHash()));
-                    return member;
+
+        return academicMemberRepository.existsByUsernameAndSoftDeleteFalse(academicMember.getUsername())
+                .flatMap(existsUsername -> {
+                    if (Boolean.TRUE.equals(existsUsername)) {
+                        log.warn("AcademicMember with username '{}' already exists. Skipping save.", academicMember.getUsername());
+                        return Mono.empty();
+                    }
+                    return academicMemberRepository.existsByEmailAndSoftDeleteFalse(academicMember.getEmail());
                 })
-                .flatMap(academicMemberRepository::save)
-                .retryWhen(retryConfig.createRetrySpec("Add AcademicMember"))
-                .doOnSuccess(saved -> log.info("Successfully saved AcademicMember with ID: {}", saved.getAcademicMemberId()));
+                .flatMap(existsEmail -> {
+                    if (Boolean.TRUE.equals(existsEmail)) {
+                        log.warn("AcademicMember with email '{}' already exists. Skipping save.", academicMember.getEmail());
+                        return Mono.empty();
+                    }
+                    return academicMemberRepository.existsByUsernameAndUniversityNumberAndSoftDeleteFalse(
+                            academicMember.getUsername(), academicMember.getUniversityNumber());
+                })
+                .flatMap(existsUsernameAndNumber -> {
+                    if (Boolean.TRUE.equals(existsUsernameAndNumber)) {
+                        log.warn("AcademicMember with username '{}' and university number '{}' already exists. Skipping save.",
+                                academicMember.getUsername(), academicMember.getUniversityNumber());
+                        return Mono.empty();
+                    }
+                    academicMember.setPasswordHash(passwordEncoder.encode(academicMember.getPasswordHash()));
+                    return academicMemberRepository.save(academicMember)
+                            .retryWhen(retryConfig.createRetrySpec("Add AcademicMember"))
+                            .doOnSuccess(saved -> {
+                                log.info("Successfully saved AcademicMember with ID: {}",
+                                        saved.getAcademicMemberId());
+                                try {
+                                    enrollmentProcessor.enrollStudentInAllCourses(
+                                            saved.getAcademicYearId(),saved.getAcademicMemberId());
+                                    log.info("Enrollment process initiated for student: {}",
+                                            saved.getAcademicMemberId());
+                                } catch (Exception e) {
+                                    log.error("Failed to initiate enrollment for student: {}",
+                                            saved.getAcademicMemberId(), e);
+                                }
+                            })
+                            ;
+                });
     }
+
 
     @Transactional
     public Mono<BatchResult> addAll(Flux<AcademicMember> academicMemberFlux) {
@@ -210,6 +252,11 @@ public class AcademicMemberService {
                 .then()
                 .doOnSuccess(v -> log.info("Successfully soft deleted AcademicMember: {}", academicMemberId));
     }
+
+    public Flux<AcademicMember> findByAcademicYearId(UUID academicYearId ,UUID roleId){
+        return academicMemberRepository.findByAcademicYearIdAndRoleIdAndSoftDeleteFalse(academicYearId,roleId);
+    }
+
 
     private boolean isSystemRole(String roleName) {
         return RoleData.DEVELOPER.name().equals(roleName);

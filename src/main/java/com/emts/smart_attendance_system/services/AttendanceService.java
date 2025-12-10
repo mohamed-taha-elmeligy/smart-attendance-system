@@ -37,14 +37,12 @@ public class AttendanceService {
     private final RetryConfig retryConfig;
     private AttendanceValidator attendanceValidator;
 
-    public Flux<Attendance> addAttendance(Flux<Attendance> attendanceFlux) {
+    public Flux<Attendance> addAttendances(Flux<Attendance> attendanceFlux) {
         return attendanceFlux
                 .flatMap(attendance ->
                         attendanceRepository.save(attendance)
                                 .retryWhen(retryConfig.createRetrySpec("save-attendance"))
-                                .onErrorResume(e -> {
-                                    return Mono.just(attendance);
-                                })
+                                .onErrorResume(e -> Mono.just(attendance))
                 );
     }
 

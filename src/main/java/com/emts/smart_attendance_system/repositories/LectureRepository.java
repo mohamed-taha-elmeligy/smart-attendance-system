@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -87,6 +88,10 @@ public interface LectureRepository extends ReactiveCrudRepository<Lecture, UUID>
 
     @Query("SELECT * FROM lecture WHERE soft_delete = TRUE")
     Flux<Lecture> findDeleted();
+
+    Flux<Lecture> findByDayOfWeek(DayOfWeek dayOfWeek);
+    Mono<Boolean> existsByLectureDateAndSoftDeleteFalse(LocalDate lectureDate);
+
 
     // ===== Count =====
     Mono<Long> countByCourseIdAndSoftDeleteFalse(UUID courseId);

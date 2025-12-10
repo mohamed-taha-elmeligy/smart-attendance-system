@@ -37,7 +37,7 @@ public interface AcademicMemberRepository extends ReactiveCrudRepository<Academi
     Mono<Boolean> existsByEmailAndSoftDeleteFalse(String email);
     Mono<Boolean> existsByUsernameAndUniversityNumberAndSoftDeleteFalse(String username, String universityNumber);
 
-
+    Flux<AcademicMember> findByAcademicYearIdAndRoleIdAndSoftDeleteFalse(UUID academicYearId,UUID roleId);
 
 
 }

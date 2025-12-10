@@ -69,5 +69,10 @@ public interface CourseRepository extends ReactiveCrudRepository<Course, UUID> {
        AND soft_delete = FALSE
        """)
     Flux<Course> findByUniversityAndYearAndSoftDeleteFalse(UUID universityId, UUID academicYearId);
+    Flux<Course> findByInstructorAcademicMemberIdAndSoftDeleteFalse(UUID instructor);
+    Mono<Boolean> existsByCodeAndUniversityIdAndAcademicYearIdAndSoftDeleteFalse(
+            String code, UUID universityId, UUID academicYearId);
+
+
 }
 

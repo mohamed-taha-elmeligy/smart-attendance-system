@@ -11,6 +11,7 @@ import com.emts.smart_attendance_system.services.AcademicMemberService;
 import com.emts.smart_attendance_system.services.AcademicYearService;
 import com.emts.smart_attendance_system.services.RoleService;
 import com.emts.smart_attendance_system.services.UniversityService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono;
 @Slf4j(topic = "SeederLogger")
 @Component
 @Order(4)
-public class AcademicMemberSeeder implements CommandLineRunner {
+public class DeveloperSeeder implements CommandLineRunner {
 
     private final AcademicMemberService academicMemberService;
     private final RoleService roleService;
@@ -31,10 +32,7 @@ public class AcademicMemberSeeder implements CommandLineRunner {
     private University cachedDeveloperUniversity;
     private AcademicYear cachedDeveloperAcademicYear;
 
-    public AcademicMemberSeeder(AcademicMemberService academicMemberService,
-                                RoleService roleService,
-                                UniversityService universityService, AcademicYearService academicYearService
-    ) {
+    public DeveloperSeeder(AcademicMemberService academicMemberService, RoleService roleService, UniversityService universityService, AcademicYearService academicYearService) {
         this.academicMemberService = academicMemberService;
         this.roleService = roleService;
         this.universityService = universityService;

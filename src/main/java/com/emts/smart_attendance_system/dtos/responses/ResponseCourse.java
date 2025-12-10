@@ -43,6 +43,8 @@ public class ResponseCourse {
 
     private UUID academicYearId;
 
+    private UUID instructorAcademicMemberId;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     private Instant createdAt;
 

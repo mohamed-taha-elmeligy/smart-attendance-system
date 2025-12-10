@@ -34,9 +34,27 @@ public class EnrollmentService {
     public Mono<Enrollment> addOne(Enrollment enrollment) {
         log.info("Attempting to save Enrollment for course: {} and student: {}",
                 enrollment.getCourseId(), enrollment.getStudentAcademicMember());
-        return enrollmentRepository.save(enrollment)
-                .retryWhen(retryConfig.createRetrySpec("Add Enrollment"))
-                .doOnSuccess(saved -> log.info("Saved Enrollment ID: {}", saved.getEnrollmentId()));
+        return findByExists(enrollment.getCourseId(),enrollment.getStudentAcademicMember())
+                .hasElement()
+                .flatMap(exists -> {
+                    if (Boolean.TRUE.equals(exists)) {
+                        log.warn("Student {} already enrolled in course {}",
+                                enrollment.getStudentAcademicMember(),
+                                enrollment.getCourseId());
+                        return Mono.empty();
+                    }
+                     return enrollmentRepository.save(enrollment)
+                             .retryWhen(retryConfig.createRetrySpec("Add Enrollment"))
+                            .doOnSuccess(saved -> log.info("Saved Enrollment ID: {}", saved.getEnrollmentId()))
+                            .onErrorResume(error -> {
+                                log.error("Failed to add Enrollment for course: {} and student: {} - Error: {}",
+                                        enrollment.getCourseId(),
+                                        enrollment.getStudentAcademicMember(),
+                                        error.getMessage(),
+                                        error);
+                                return Mono.empty();
+                            });
+                });
     }
 
     // ===== Update =====

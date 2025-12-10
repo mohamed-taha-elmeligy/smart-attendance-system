@@ -80,8 +80,8 @@ public class Lecture extends AuditableEntity {
                     @NonNull LocalTime startTime,
                     @NonNull LocalTime endTime,
                     @NonNull String room,
-                    @NonNull UUID courseId,
-                    @NonNull UUID instructorAcademicMemberId){
+                    UUID courseId,
+                    UUID instructorAcademicMemberId){
 
         this.lectureDate = lectureDate;
         this.dayOfWeek = dayOfWeek;
