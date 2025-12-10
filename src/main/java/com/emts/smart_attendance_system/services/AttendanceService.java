@@ -77,6 +77,8 @@ public class AttendanceService {
                     attendance.setQrCodeId(qrCodeId);
                     attendance.setLocationVerified(true);
                     attendance.setIpAddress("192.168.1.10");
+                    attendance.setPresent(true);
+                    attendance.setCheckInTime(Instant.now());
                     return attendanceRepository.save(attendance)
                             .retryWhen(retryConfig.createRetrySpec("update-attendance"))
                             .map(saved -> true);

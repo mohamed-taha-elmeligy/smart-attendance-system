@@ -21,6 +21,7 @@ import java.util.UUID;
  * *******************************************************************
  */
 
+@Setter
 @Table(name = "attendance")
 @NoArgsConstructor
 @Getter
@@ -32,19 +33,16 @@ public class Attendance extends AuditableEntity {
     @Id
     @ToString.Include
     @Column("attendance_id")
-    @Setter
     private UUID attendanceId ;
 
     @ToString.Include
     @Column("check_in_time")
     private Instant checkInTime ;
 
-    @Setter
     @ToString.Include
     @Column("ip_address")
     private String ipAddress ;
 
-    @Setter
     @ToString.Include
     @Column("device_id")
     private String deviceId ;
@@ -53,23 +51,19 @@ public class Attendance extends AuditableEntity {
     @Column("is_present")
     private boolean isPresent = false;
 
-    @Setter
     @ToString.Include
     @Column("location_verified")
     private boolean locationVerified = false;
 
     // ===== Relationships =====
-    @Setter
     @ToString.Include
     @Column("lecture_id")
     private UUID lectureId ;
 
-    @Setter
     @ToString.Include
     @Column("qr_code_id")
     private UUID qrCodeId ;
 
-    @Setter
     @ToString.Include
     @Column("student_academic_member_id")
     private UUID studentAcademicMemberId ;
