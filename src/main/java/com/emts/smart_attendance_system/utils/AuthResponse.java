@@ -2,6 +2,8 @@ package com.emts.smart_attendance_system.utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.UUID;
+
 /**
  * *******************************************************************
  * File: AuthResponse.java
@@ -29,6 +31,7 @@ public record AuthResponse(
     // Nested UserInfo record
     public record UserInfo(
             String username,
+            UUID userId ,
             String role,
             String email
     ) {}

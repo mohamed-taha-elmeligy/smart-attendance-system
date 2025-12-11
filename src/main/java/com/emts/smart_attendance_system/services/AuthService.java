@@ -76,6 +76,7 @@ public class AuthService {
                                                     3600000L, // expires in
                                                     new AuthResponse.UserInfo(
                                                             academicMember.getUsername(),
+                                                            academicMember.getAcademicMemberId(),
                                                             role.getName(),
                                                             academicMember.getEmail()
                                                     )
