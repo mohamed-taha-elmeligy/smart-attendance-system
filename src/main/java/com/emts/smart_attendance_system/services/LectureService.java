@@ -36,11 +36,10 @@ public class LectureService {
     public Mono<Lecture> addOne(Lecture lecture) {
         log.info("Attempting to save Lecture for course: {}", lecture.getCourseId());
 
-        return lectureRepository.existsByLectureDateAndSoftDeleteFalse(
-                        lecture.getLectureDate()
-                )
+        return findByCourseIdAndLectureDate(lecture.getCourseId(), lecture.getLectureDate())
+                .hasElements()
                 .flatMap(exists -> {
-                    if (exists) {
+                    if (Boolean.TRUE.equals(exists)) {
                         log.warn("Lecture for course '{}' on '{}' by instructor '{}' already exists. Skipping save.",
                                 lecture.getCourseId(), lecture.getLectureDate(), lecture.getInstructorAcademicMemberId());
                         return Mono.empty();

@@ -39,10 +39,10 @@ public class CourseService {
                         course.getAcademicYearId()
                 )
                 .flatMap(exists -> {
-                    if (exists) {
+                    if (Boolean.TRUE.equals(exists)) {
                         log.warn("Course '{}' with code '{}' already exists. Skipping save.",
                                 course.getName(), course.getCode());
-                        return Mono.empty(); // نتجاوز الإدراج
+                        return Mono.empty();
                     } else {
                         return courseRepository.save(course)
                                 .retryWhen(retryConfig.createRetrySpec("Add Course"))

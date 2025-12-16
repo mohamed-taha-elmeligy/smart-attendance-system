@@ -2,8 +2,10 @@ package com.emts.smart_attendance_system.processors;
 
 import com.emts.smart_attendance_system.entities.Course;
 import com.emts.smart_attendance_system.entities.Enrollment;
+import com.emts.smart_attendance_system.enums.RoleData;
 import com.emts.smart_attendance_system.services.CourseService;
 import com.emts.smart_attendance_system.services.EnrollmentService;
+import com.emts.smart_attendance_system.services.RoleService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -31,20 +33,27 @@ public class StudentEnrollmentProcessor {
 
     private final EnrollmentService enrollmentService;
     private final CourseService courseService;
+    private final RoleService roleService;
 
-    public void enrollStudentInAllCourses(UUID academicYear , UUID studentId){
-        getCourses(academicYear)
+    public void enrollStudentInAllCourses(UUID academicYear , UUID studentId , UUID roleId){
+        roleService.findById(roleId)
+                .flatMapMany(role -> {
+                    if (!role.getName().equals(RoleData.STUDENT.name())) {
+                        return Flux.empty();
+                    }
+                    return getCourses(academicYear);
+                })
                 .flatMap(course ->
                         enrollmentService.addOne(
-                                Enrollment.builder()
-                                        .studentAcademicMember(studentId)
-                                        .courseId(course.getCourseId())
-                                        .build()
+                                        Enrollment.builder()
+                                                .studentAcademicMember(studentId)
+                                                .courseId(course.getCourseId())
+                                                .build()
                                 )
-                                .doOnSuccess(success->
+                                .doOnSuccess(success ->
                                         log.info("Success add Student:{} to Course:{} ",
                                                 studentId, course.getName()))
-                                .doOnError(error->
+                                .doOnError(error ->
                                         log.error("Error Add Student:{} to Course:{} ",
                                                 studentId, course.getName()))
                                 .onErrorResume(error -> {
@@ -52,13 +61,11 @@ public class StudentEnrollmentProcessor {
                                             studentId, course.getCourseId(), error);
                                     return Mono.empty();
                                 })
-
                 )
-                .doOnComplete(()-> log.info("Registration has ended"))
-                .doOnError(error -> log.error("General error: {}", error.getMessage()))
-                .onErrorResume(error -> Mono.empty())
-                .subscribe();
+                .then()
+                .doOnTerminate(() -> log.info("Registration has ended"));
     }
+
 
 
     private Flux<Course> getCourses(UUID academicYear){

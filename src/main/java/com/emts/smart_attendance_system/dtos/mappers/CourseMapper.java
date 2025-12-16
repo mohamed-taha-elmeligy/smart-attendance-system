@@ -34,6 +34,7 @@ public interface CourseMapper {
     @Mapping(target = "softDelete", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(source = "instructorAcademicMemberId", target = "instructorAcademicMemberId")
     Course toEntity(RequestCourse request);
 
     @Mapping(target = "courseDeleteStatus", expression = "java(entity.getCourseDeleteStatus())")

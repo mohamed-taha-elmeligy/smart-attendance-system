@@ -31,11 +31,11 @@ public interface AcademicMemberMapper {
     // ===== Synchronous Mappings (for internal use) =====
 
     @Mapping(target = "academicMemberId", ignore = true)
-    @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "emailVerified", ignore = true)
     @Mapping(target = "softDelete", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "passwordHash", source = "password")
     AcademicMember toEntity(RequestAcademicMember request);
 
     @Mapping(target = "emailVerificationStatus", expression = "java(entity.getEmailVerifiedText())")

@@ -9,6 +9,8 @@ import com.emts.smart_attendance_system.services.LectureService;
 import com.emts.smart_attendance_system.utils.AttendanceProcessResult;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -35,7 +37,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @AllArgsConstructor
-public class AttendanceProcessor {
+@Order(20)
+public class AttendanceProcessor implements CommandLineRunner {
 
     private final AttendanceService attendanceService;
     private final EnrollmentService enrollmentService;
@@ -51,7 +54,7 @@ public class AttendanceProcessor {
     @Scheduled(cron = "0 */15 * * * *")
     public void retryFailedAttendances() {
         log.info("Retry failed attendance records");
-        processAttendances(createAttendance());
+//        processAttendances(createAttendance());
     }
 
     private void processAttendances(Flux<Attendance> attendances) {
@@ -158,6 +161,17 @@ public class AttendanceProcessor {
                         log.error("Error fetching course recordings {}: {}",
                                 courseId, error.getMessage())
                 );
+    }
+
+    /**
+     * @param args
+     * @throws Exception
+     */
+    @Override
+    public void run(String... args) throws Exception {
+//        log.info("Start creating attendance records for daily lectures");
+////        processAttendances(createAttendance());
+//        attendanceService.addAttendances(createAttendance());
     }
 }
 

@@ -1,5 +1,6 @@
 package com.emts.smart_attendance_system.dtos.requests;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,11 +37,14 @@ public class RequestLecture {
     @NotNull(message = "Day of week is required")
     private DayOfWeek dayOfWeek;
 
+    @Schema(example = "09:00:00")
     @NotNull(message = "Start time is required")
     private LocalTime startTime;
 
+    @Schema(example = "17:00:00")
     @NotNull(message = "End time is required")
     private LocalTime endTime;
+
 
     @NotBlank(message = "Room is required")
     @Size(min = 1, max = 50, message = "Room must be between 1 and 50 characters")

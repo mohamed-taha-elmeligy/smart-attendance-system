@@ -95,7 +95,7 @@ public class AcademicMemberService {
                                         saved.getAcademicMemberId());
                                 try {
                                     enrollmentProcessor.enrollStudentInAllCourses(
-                                            saved.getAcademicYearId(),saved.getAcademicMemberId());
+                                            saved.getAcademicYearId(),saved.getAcademicMemberId(),saved.getRoleId());
                                     log.info("Enrollment process initiated for student: {}",
                                             saved.getAcademicMemberId());
                                 } catch (Exception e) {
