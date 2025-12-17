@@ -47,7 +47,10 @@ public class QrCodeService {
 
         return qrCodeRepository.save(qrCode)
                 .retryWhen(retryConfig.createRetrySpec("Generate QR Code"))
-                .doOnSuccess(saved -> log.info("Generated QR Code ID: {}", saved.getQrCodeId()));
+                .doOnSuccess(saved -> {
+                    log.info("Generated QR Code ID: {}", saved.getQrCodeId());
+                    saved.setUuidTokenHash(qrToken);
+                });
     }
 
     // ===== Find Active QR Codes =====

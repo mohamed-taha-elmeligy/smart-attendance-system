@@ -169,9 +169,9 @@ public class AttendanceProcessor implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-//        log.info("Start creating attendance records for daily lectures");
-////        processAttendances(createAttendance());
-//        attendanceService.addAttendances(createAttendance());
+        log.info("Start creating attendance records for daily lectures..");
+        attendanceService.addAttendances(createAttendance());
+        log.info("completed creating attendance records for daily lectures");
     }
 }
 

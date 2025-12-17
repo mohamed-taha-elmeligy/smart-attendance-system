@@ -3,6 +3,8 @@ package com.emts.smart_attendance_system.seeder;
 import com.emts.smart_attendance_system.entities.Lecture;
 import com.emts.smart_attendance_system.services.LectureService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -24,7 +26,8 @@ import java.time.LocalDate;
 
 @Slf4j(topic = "SeederLogger")
 @Component
-public class LectureSeeder{
+@Order(19)
+public class LectureSeeder implements CommandLineRunner {
 
     private final LectureService lectureService;
 
@@ -36,6 +39,11 @@ public class LectureSeeder{
      * Runs every day at 00:00 (midnight) - 12 AM
      * Fetches lectures for the current day from database based on DayOfWeek
      */
+
+    public void run (String... arg)  {
+//        addLecturesForToday();
+    }
+
     @Scheduled(cron = "0 0 0 * * *")
     public void scheduledLectureSeeding() {
         log.info("⏰ Starting scheduled LectureSet seeding...");
