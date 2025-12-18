@@ -53,8 +53,6 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-
-        // Delay execution until subscription time to avoid eagerness
         return Mono.defer(() -> {
             String path = exchange.getRequest().getURI().getPath();
 
@@ -67,33 +65,35 @@ public class JwtAuthenticationFilter implements WebFilter {
 
             if (!StringUtils.hasText(token)) {
                 log.debug("No JWT token found in request to: {}", path);
-                // No token: proceed without authentication (Security will later handle access decision)
                 return chain.filter(exchange);
             }
 
-            // Validate token then obtain Authentication and place it in Reactor context
+            // التحقق من صحة الـ token والحصول على Authentication
             return jwtTokenProvider.validateToken(token)
-                    // only proceed if valid == true
-                    .filter(Boolean::booleanValue)
+                    .flatMap(isValid -> {
+                        if (!isValid) {
+                            log.warn("Invalid or expired token for request to: {}", path);
+                            return unauthorizedResponse(exchange).then(Mono.empty());
+                        }
+                        return Mono.just(true);
+                    })
                     .flatMap(valid -> jwtTokenProvider.getAuthentication(token))
                     .flatMap(authentication -> {
+                        if (authentication == null) {
+                            log.warn("Could not extract authentication for request to: {}", path);
+                            return unauthorizedResponse(exchange).then(Mono.empty());
+                        }
                         log.debug("Successfully authenticated user: {} for request to: {}",
                                 authentication.getName(),
                                 path);
-                        // attach authentication into Reactor Context for downstream security checks
                         return chain.filter(exchange)
                                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
                     })
-                    // if validation failed or auth extraction empty -> continue chain without auth
-                    .switchIfEmpty(Mono.defer(() -> {
-                        log.warn("Invalid token or could not extract authentication for request to: {}", path);
-                        return unauthorizedResponse(exchange);
-                    }))
                     .onErrorResume(error -> {
-                        log.error("Error during JWT authentication for request to: {}, Error: {}", path, error.getMessage());
+                        log.error("Error during JWT authentication for request to: {}, Error: {}",
+                                path, error.getMessage(), error);
                         return unauthorizedResponse(exchange);
                     });
-
         });
     }
 
@@ -112,11 +112,14 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange) {
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        byte[] bytes = "Invalid or expired token".getBytes(StandardCharsets.UTF_8);
+        exchange.getResponse().getHeaders().set(HttpHeaders.CONTENT_TYPE, "application/json");
+
+        String responseBody = "{\"error\": \"Invalid or expired token\"}";
+        byte[] bytes = responseBody.getBytes(StandardCharsets.UTF_8);
+
         return exchange.getResponse()
                 .writeWith(Mono.just(exchange.getResponse()
                         .bufferFactory()
                         .wrap(bytes)));
     }
-
 }

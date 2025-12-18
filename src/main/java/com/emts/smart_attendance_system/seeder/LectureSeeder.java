@@ -57,12 +57,10 @@ public class LectureSeeder implements CommandLineRunner {
         lectureService.findByDayOfWeek(today)
                 .flatMap(lecture ->
                         lectureService.addOne(createNewLecture(lecture))
-                                .doOnSuccess(success ->
-                                        log.info("✓ Added lecture for {} at {} in room {}",
-                                                success.getDayOfWeek(),
-                                                success.getStartTime(),
-                                                success.getRoom())
-                                )
+                                .doOnSuccess(success -> log.info("✓ Lecture added"))
+                                .switchIfEmpty(Mono.fromRunnable(() ->
+                                        log.info("ℹ Lecture already exists for this date")
+                                ))
                                 .doOnError(e ->
                                         log.error("✗ Failed to add lecture for course: {}",
                                                 lecture.getCourseId(), e)

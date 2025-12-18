@@ -37,19 +37,16 @@ public class AttendanceService {
     private final RetryConfig retryConfig;
     private AttendanceValidator attendanceValidator;
 
-    public Flux<Attendance> addAttendances(Flux<Attendance> attendanceFlux) {
-        return attendanceFlux
-                .flatMap(attendance ->
-                        hasCheckedIn(attendance.getStudentAcademicMemberId(), attendance.getLectureId())
-                                .flatMap(exists -> {
-                                    if (Boolean.TRUE.equals(exists)) {
-                                        return Mono.empty();
-                                    }
-                                    return attendanceRepository.save(attendance)
-                                            .retryWhen(retryConfig.createRetrySpec("save-attendance"))
-                                            .onErrorResume(e -> Mono.just(attendance));
-                                })
-                );
+    public Mono<Attendance> addAttendances(Attendance attendance) {
+        return hasCheckedIn(attendance.getStudentAcademicMemberId(), attendance.getLectureId())
+                .flatMap(exists -> {
+                    if (Boolean.TRUE.equals(exists)) {
+                        return Mono.empty();
+                    }
+                    return attendanceRepository.save(attendance)
+                            .retryWhen(retryConfig.createRetrySpec("save-attendance"))
+                            .onErrorResume(e -> Mono.just(attendance));
+                });
     }
 
     public Mono<Boolean> presence(RequestAttendance requestAttendance,
