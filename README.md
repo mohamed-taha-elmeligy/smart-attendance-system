@@ -475,7 +475,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - **Issues**: Report bugs via GitHub Issues
 - **Discussions**: Use GitHub Discussions for feature requests
-- **Email**: support@example.com
 
 ---
 
