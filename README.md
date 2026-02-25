@@ -36,9 +36,9 @@ A modern, reactive attendance management system built with **Spring Boot 3.5.6**
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| **Framework** | Spring Boot | 3.5.6 |
-| **Web Layer** | Spring WebFlux | 3.5.6 |
-| **Database** | Spring Data R2DBC | 3.5.6 |
+| **Framework** | Spring Boot | 4.0.3 |
+| **Web Layer** | Spring WebFlux | 4.0.3 |
+| **Database** | Spring Data R2DBC | 4.0.3 |
 | **RDBMS** | PostgreSQL (Primary) | 15+ |
 | **Cache** | Caffeine | Latest |
 | **Security** | JWT (JJWT) | 0.12.6 |
