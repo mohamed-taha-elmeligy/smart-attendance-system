@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UniversitiesData {
-    HIET(" قسم اول مدينة كفر الشيخ، محافظة كفر الشيخ 6862030"),
-    DEVELOPERS_UNIVERSITY("6 قسم سيدى جابر، الإسكندرية 5432062");
+    HIET(" قسم اول مدينة كفر الشيخ"),
+    DEVELOPERS_UNIVERSITY("الإسكندرية");
     private final String location;
 }

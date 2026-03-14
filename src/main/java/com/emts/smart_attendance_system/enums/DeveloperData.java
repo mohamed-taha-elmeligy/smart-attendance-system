@@ -24,8 +24,8 @@ public enum DeveloperData {
             "Mahmoud",
             "Ibrahim",
             "TeamLeader",
-            "01203258202",
-            "mahmouddesouky5@gmail.com",
+            "01200000001",
+            "TeamLeader@gmail.com",
             LocalDate.of(2003, Month.SEPTEMBER, 3),
             "UNI-2003-001"
     ),
@@ -34,8 +34,8 @@ public enum DeveloperData {
             "Mohamed",
             "Taha",
             "TechTeamLeader",
-            "01282817089",
-            "mohamed742590taha@gmail.com",
+            "01200000000",
+            "TechTeamLeader@gmail.com",
             LocalDate.of(2002, Month.JANUARY, 7),
             "UNI-2002-001"
     );

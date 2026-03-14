@@ -39,7 +39,7 @@ public class UniversitySeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         log.info("Starting initial University seeding...");
-        seedUniversities().block(); // ✅ block during startup
+        seedUniversities().block();
         appStarted = true;
         log.info("✓ Initial University seeding completed");
     }
