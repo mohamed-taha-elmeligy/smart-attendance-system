@@ -45,11 +45,10 @@ public class AttendanceController {
     // ===== Mark Attendance =====
     @PutMapping("/mark-present")
     public Mono<ResponseEntity<Map<String, String>>> markPresent(
-            @RequestBody @Valid RequestAttendance requestAttendance,
-            @RequestBody @Valid RequestQrGenerator requestQrGenerator) {
+            @RequestBody @Valid RequestAttendance requestAttendance) {
         log.debug("Marking attendance for student: {}", requestAttendance.getStudentAcademicMemberId());
 
-        return attendanceConverter.present(requestAttendance, requestQrGenerator)
+        return attendanceConverter.present(requestAttendance)
                 .flatMap(isPresent -> {
                     if (Boolean.TRUE.equals(isPresent)) {
                         log.info("Attendance marked successfully for student: {}",

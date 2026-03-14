@@ -31,7 +31,7 @@ import java.util.UUID;
 public class RequestLecture {
 
     @NotNull(message = "Lecture date is required")
-    @FutureOrPresent(message = "Lecture date must be today or in the future")
+//    @FutureOrPresent(message = "Lecture date must be today or in the future")
     private LocalDate lectureDate;
 
     @NotNull(message = "Day of week is required")

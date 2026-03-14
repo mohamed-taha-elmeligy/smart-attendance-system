@@ -71,12 +71,11 @@ public interface AttendanceRepository extends R2dbcRepository<Attendance, UUID> 
     // ===== Find by Device ID =====
     Flux<Attendance> findByDeviceId(String deviceId);
 
-    // ===== Find Student Attendance in Lecture =====
+    // ===== Find Student Attendance in Lecture             ORDER BY check_in_time DESC =====
     @Query("""
             SELECT * FROM attendance
             WHERE student_academic_member_id = :studentId
             AND lecture_id = :lectureId
-            ORDER BY check_in_time DESC
             LIMIT 1
             """)
     Mono<Attendance> findLatestAttendanceForStudentInLecture(

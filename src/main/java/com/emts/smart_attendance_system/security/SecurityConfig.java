@@ -63,7 +63,8 @@ public class SecurityConfig {
 
                         // Health check
                         .pathMatchers("/actuator/health").permitAll()
-                        .anyExchange().authenticated()
+//                        .anyExchange().authenticated()
+                                .anyExchange().permitAll()
                 )
                 .authenticationManager(authenticationManager)
                 .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)

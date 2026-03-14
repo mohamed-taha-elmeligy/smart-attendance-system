@@ -1,7 +1,6 @@
 package com.emts.smart_attendance_system.validation;
 
 import com.emts.smart_attendance_system.dtos.requests.RequestAttendance;
-import com.emts.smart_attendance_system.dtos.requests.RequestQrGenerator;
 import com.emts.smart_attendance_system.repositories.AttendanceRepository;
 import com.emts.smart_attendance_system.services.QrCodeService;
 import com.emts.smart_attendance_system.utils.QrTokenGenerator;
@@ -36,29 +35,22 @@ public class AttendanceValidator {
     private QrTokenGenerator qrTokenGenerator;
     private AttendanceRepository attendanceRepository;
 
-    public Mono<Boolean> attendanceValidation(RequestAttendance requestAttendance, RequestQrGenerator requestQrGenerator){
+    public Mono<Boolean> attendanceValidation(RequestAttendance requestAttendance){
         UUID studentId = requestAttendance.getStudentAcademicMemberId();
         String deviceId = requestAttendance.getDeviceId();
-        UUID qrCodeId = requestQrGenerator.getQrCodeId();
+        UUID qrCodeId = requestAttendance.getQrCodeId();
         UUID lectureId = requestAttendance.getLectureId();
 
         return attendanceRepository.findLatestAttendanceForStudentInLecture(studentId, lectureId)
-                .hasElement()
-                .flatMap(studentExists -> {
-                    if (Boolean.FALSE.equals(studentExists)) {
-                        log.warn("Student not found or invalid: {}", studentId);
-                        return Mono.just(false);
-                    }
-
-                    return checkDeviceId(deviceId, studentId,lectureId);
-                })
+                .switchIfEmpty(Mono.error(new Exception("Student not enrolled in this lecture")))
+                .flatMap(enrollment -> checkDeviceId(deviceId, studentId, lectureId))
                 .flatMap(deviceValid -> {
                     if (Boolean.FALSE.equals(deviceValid)) {
                         log.warn("Device validation failed: {}", deviceId);
                         return Mono.just(false);
                     }
 
-                    return validateQrCode(qrCodeId, requestQrGenerator, requestAttendance);
+                    return validateQrCode(qrCodeId, requestAttendance);
                 });
     }
 
@@ -78,11 +70,11 @@ public class AttendanceValidator {
                 .onErrorReturn(true);
     }
 
-    private Mono<Boolean> validateQrCode(UUID qrCodeId, RequestQrGenerator requestQrGenerator, RequestAttendance requestAttendance) {
+    private Mono<Boolean> validateQrCode(UUID qrCodeId, RequestAttendance requestAttendance) {
         return qrCodeService.findByIdActive(qrCodeId)
                 .flatMap(qrCode -> {
                     boolean tokenMatches = qrTokenGenerator.matches(
-                            requestQrGenerator.getUuidTokenHash(),
+                            requestAttendance.getUuidTokenHash(),
                             qrCode.getUuidTokenHash());
 
                     if (!tokenMatches) {
@@ -96,7 +88,7 @@ public class AttendanceValidator {
                                 .then(Mono.just(false));
                     }
 
-                    boolean ipMatches = qrCode.getNetworkInfo().matches(requestAttendance.getIpAddress());
+                    boolean ipMatches = qrCode.getNetworkInfo().equals(requestAttendance.getIpAddress());
                     if (!ipMatches) {
                         log.warn("IP address mismatch for QR Code: {}", qrCodeId);
                         return Mono.just(false);

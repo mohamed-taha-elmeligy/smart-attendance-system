@@ -49,9 +49,9 @@ public class AttendanceService {
                 });
     }
 
-    public Mono<Boolean> presence(RequestAttendance requestAttendance,
-                                  RequestQrGenerator requestQrGenerator){
-        return attendanceValidator.attendanceValidation(requestAttendance, requestQrGenerator)
+    public Mono<Boolean> presence(RequestAttendance requestAttendance){
+        log.info("✅✅✅✅✅✅✅✅✅✅✅");
+        return attendanceValidator.attendanceValidation(requestAttendance)
                 .flatMap(validate -> {
                     if (Boolean.FALSE.equals(validate))
                         return Mono.just(false);
@@ -62,7 +62,7 @@ public class AttendanceService {
                             .flatMap(existingAttendance -> {
                                 existingAttendance.setIpAddress(requestAttendance.getIpAddress());
                                 existingAttendance.setDeviceId(requestAttendance.getDeviceId());
-                                existingAttendance.setQrCodeId(requestQrGenerator.getQrCodeId());
+                                existingAttendance.setQrCodeId(requestAttendance.getQrCodeId());
                                 existingAttendance.presented();
                                 existingAttendance.validateLocation();
 

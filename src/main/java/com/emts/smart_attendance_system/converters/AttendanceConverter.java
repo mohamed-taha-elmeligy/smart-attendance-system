@@ -33,8 +33,8 @@ public class AttendanceConverter {
     private AttendanceMapper attendanceMapper;
 
 
-    public Mono<Boolean> present (RequestAttendance requestAttendance, RequestQrGenerator requestQrGenerator){
-        return attendanceService.presence(requestAttendance,requestQrGenerator);
+    public Mono<Boolean> present (RequestAttendance requestAttendance){
+        return attendanceService.presence(requestAttendance);
     }
 
     public Mono<Boolean> developPresence(UUID lectureId,UUID studentId,UUID qrCodeId ){
