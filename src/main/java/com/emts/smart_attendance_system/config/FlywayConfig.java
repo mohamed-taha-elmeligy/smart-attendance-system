@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Configuration;
 
  * Flyway Configuration
 
- * Spring Boot Auto Configuration يتولى Flyway تلقائياً
- * يقرأ الإعدادات من application.properties:
+ * Spring Boot Auto Configuration
+ *   application.properties:
  *   spring.flyway.enabled=true
  *   spring.flyway.url=${FLYWAY_URL:...}
  *   spring.flyway.user=${DATABASE_USER:...}
@@ -27,6 +27,5 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class FlywayConfig {
-    // Spring Boot Auto Configuration يتولى كل شيء
-    // لا تحتاج تعريف Bean يدويًا
+    // Spring Boot Auto Configuration
 }
