@@ -50,7 +50,7 @@ public class AttendanceService {
     }
 
     public Mono<Boolean> presence(RequestAttendance requestAttendance){
-        log.info("✅✅✅✅✅✅✅✅✅✅✅");
+        log.info("Calling");
         return attendanceValidator.attendanceValidation(requestAttendance)
                 .flatMap(validate -> {
                     if (Boolean.FALSE.equals(validate))
